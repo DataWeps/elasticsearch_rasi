@@ -31,8 +31,9 @@ class ElasticSearchRasi
   #   :url - database url (default localhost)
   #   :ua  - Curburger::Client instance options
   #   :direct_idx - true|false
-  #   :direct_idx_mentions -
-  #     - nil | symbolic key from $ES constant | name of index (String)
+  #   :logging    - true|false (default false)
+  #   :log_file
+  #   :logg_level - GLogg::??
   def initialize(idx, opts = {})
     return false unless idx
     opts[:direct_idx] = false unless opts.include?(:direct_idx)
@@ -51,7 +52,7 @@ class ElasticSearchRasi
       #   :mention_write  => '_current',
       # }
     }
-    if opts.include?(:logging) && !opts[:logging]
+    if (opts.include?(:logging) && !opts[:logging]) || !opts.include?(:logging)
       GLogg.ini(nil, GLogg::L_NIL)
     else
       GLogg.ini(
@@ -99,7 +100,7 @@ class ElasticSearchRasi
 
 
   # alias method for getting node document (page, user, group...)
-  def get_documents_by_mget(id, idx, type = 'document')
+  def get_documents_by_mget(id, idx = @idx, type = 'document')
     return {} unless id
     id = [id] unless id.kind_of?(Array)
     return {} if id.empty?
@@ -123,14 +124,14 @@ class ElasticSearchRasi
   # alias method for requesting direct document
   #   - uses get_doc method
   #   - return {document} without id =>
-  def get_document(key, idx, type = 'document')
+  def get_document(key, idx = @idx, type = 'document')
     response = get_doc(key, idx, type) or return nil
     response.values.first
   end
 
   # ids - single id or array of ids
   # return nil in case of error, {id => doc} of documents found otherwise
-  def get_docs(ids, idx, type = 'document')
+  def get_docs(ids, idx = @idx, type = 'document')
     return {} unless ids
     ids = [ids] unless ids.kind_of?(Array)
     return {} if ids.empty?
@@ -157,7 +158,7 @@ class ElasticSearchRasi
 
   # get document from ES with direct query trough GET request
   #   - return nil in case of error, otherwise {id => document}
-  def get_doc(key, idx, type = 'document')
+  def get_doc(key, idx = @idx, type = 'document')
     response = request_elastic(
       :get, "#{@url}/#{idx}/#{type}/#{key}"
     )
@@ -167,7 +168,7 @@ class ElasticSearchRasi
   end # save_docs
 
   # docs - [docs] or {id => doc}
-  def save_docs(docs, idx, type = 'document')
+  def save_docs(docs, idx = @idx, type = 'document')
     return true unless docs && !docs.empty? # nothing to save
     to_save = []
     if docs.kind_of?(Hash) # convert to array
