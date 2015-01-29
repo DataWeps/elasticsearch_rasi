@@ -1,0 +1,57 @@
+# encoding:utf-8
+
+module Scroll
+
+  # query - hash of the query to be done
+  # opts can override scroll validity, size, etc.
+  # return nil in case of error, otherwise scroll hash
+  # {:scroll => <scroll_param>, :scroll_id => <scroll_id>, :total => total}
+  def scan(query, idx, opts = {})
+    o = {'scroll' => '10m', 'size' => ElasticSearchRasi::SLICES}.merge Util.hash_keys_to_str opts
+    url = "#{@url}/#{idx}/_search?search_type=scan&#{Util.param_str o}"
+
+    rsp = request_elastic(
+      :post,
+      url,
+      Oj.dump(query),
+      {:content_type => 'application/json'}
+    ) or return false
+
+    {
+      :scroll    => o['scroll'],
+      :scroll_id => rsp['_scroll_id'],
+      :total     => rsp['hits']['total'].to_i
+    }
+  end # scan
+
+  # wrapper to scroll each document for the initialized scan
+  # scan - hash as returned by scan method above
+  # each document is yielded for processing
+  # return nil in case of error (any of the requests failed),
+  # count of documents scrolled otherwise
+  def scroll_each scan
+    count, total = 0, nil
+    while true
+      url = "#{@url}/_search/scroll?scroll=#{CGI.escape scan[:scroll]}&" +
+        "scroll_id=#{CGI.escape scan[:scroll_id]}"
+
+      rsp = request_elastic(:get, url)
+
+      unless rsp
+        GLogg.l_f { 'ElasticSearch.scroll_each: FAILED SCROLL' }
+        return count
+      end
+
+      scan[:scroll_id] = rsp['_scroll_id']
+      total ||= rsp['hits']['total'].to_i
+
+      rsp['hits']['hits'].each { |document|
+        yield document
+        count += 1
+      }
+      break if rsp['hits']['hits'].empty?
+    end
+    count
+  end # scroll_each
+
+end
