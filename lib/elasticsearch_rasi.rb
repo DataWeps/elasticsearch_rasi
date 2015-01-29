@@ -37,7 +37,7 @@ class ElasticSearchRasi
   def initialize(idx, opts = {})
     return false unless idx
     opts[:direct_idx] = false unless opts.include?(:direct_idx)
-    @direct_idx       = opts[:direct_idx]
+    @direct_idx       = opts[:direct_idx] || false
 
     $ES ||= {
       # :yelp => {
@@ -67,16 +67,14 @@ class ElasticSearchRasi
       # main node index (fb_page, topic, article etc ...)
       @idx          = $ES.include?(idx.to_sym) ?
         $ES[idx.to_sym] : idx
-      return false unless @idx && !@idx.empty?
-      @idx
     else
-      return false unless $ES.include?(idx.to_sym)
+      raise ArgumentError.new("Missing defined index '#{idx}'") unless
+        $ES.include?(idx.to_sym)
       @idx               = $ES[idx.to_sym]
       @idx_node_read     = get_index(:node, :read)
       @idx_node_write    = get_index(:node, :write)
       @idx_mention_read  = get_index(:mention, :read)
       @idx_mention_write = get_index(:mention, :write)
-
     end
 
     @ua_opts = {
@@ -88,7 +86,6 @@ class ElasticSearchRasi
       :logging        => false
     }.merge(opts[:ua] || $ES[:ua] || {})
     @ua = Curburger.new @ua_opts
-    true
   end
 
   def get_index(type, access)
