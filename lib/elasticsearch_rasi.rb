@@ -19,12 +19,14 @@ class ElasticSearchRasi
   include Request
   include Scroll
   include Node
+  include Mention
 
   Oj.default_options = {:mode => :compat}
   SLICES     = 250
   BULK_STORE = 500
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
-  attr_accessor :idx, :idx_node, :idx_mention, :direct_idx
+  attr_accessor :idx, :idx_node_read, :idx_node_write
+  attr_accessor :idx_mention_read, :idx_mention_write
 
   # idx - index name OR index type
   # opts - optional configuration:
@@ -52,13 +54,13 @@ class ElasticSearchRasi
       #   :mention_write  => '_current',
       # }
     }
-    if (opts.include?(:logging) && !opts[:logging]) || !opts.include?(:logging)
-      GLogg.ini(nil, GLogg::L_NIL)
-    else
+    if (opts[:logging] || $ES[:logging])
       GLogg.ini(
-        opts[:log_file]   || LOG_FILE,
-        opts[:logg_level] || GLogg::L_INF
+        opts[:log_file]  || $ES[:log_file]  || LOG_FILE,
+        opts[:log_level] || $ES[:log_level] || GLogg::L_INF
       )
+    else
+      GLogg.ini(nil, GLogg::L_NIL)
     end
     @url   = opts[:url] || $ES[:url] || 'http://127.0.0.1:9200'
 
@@ -70,11 +72,10 @@ class ElasticSearchRasi
     else
       raise ArgumentError.new("Missing defined index '#{idx}'") unless
         $ES.include?(idx.to_sym)
-      @idx               = $ES[idx.to_sym]
-      @idx_node_read     = get_index(:node, :read)
-      @idx_node_write    = get_index(:node, :write)
-      @idx_mention_read  = get_index(:mention, :read)
-      @idx_mention_write = get_index(:mention, :write)
+      @idx_node_read     = get_index($ES[idx.to_sym], :node, :read)
+      @idx_node_write    = get_index($ES[idx.to_sym], :node, :write)
+      @idx_mention_read  = get_index($ES[idx.to_sym], :mention, :read)
+      @idx_mention_write = get_index($ES[idx.to_sym], :mention, :write)
     end
 
     @ua_opts = {
@@ -88,11 +89,11 @@ class ElasticSearchRasi
     @ua = Curburger.new @ua_opts
   end
 
-  def get_index(type, access)
-    return nil unless @idx && !@idx.empty?
-    base = "#{@idx[:prefix]}#{@idx[:base]}"
-    idx = "#{base}#{@idx[:"#{type}_suffix"]}"
-    "#{idx}#{@idx[:"#{type}_#{access}"]}"
+  def get_index(idx, type, access)
+    return nil unless idx && !idx.empty?
+    base  = "#{idx[:prefix]}#{idx[:base]}"
+    index = "#{base}#{idx[:"#{type}_suffix"]}"
+    "#{index}#{idx[:"#{type}_#{access}"]}"
   end
 
 
