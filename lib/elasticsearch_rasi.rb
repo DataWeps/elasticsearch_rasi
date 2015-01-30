@@ -160,7 +160,7 @@ class ElasticSearchRasi
     response = request_elastic(
       :get, "#{@url}/#{idx}/#{type}/#{key}"
     )
-    return nil unless response && response.kind_of?(Hash) &&
+    return {} unless response && response.kind_of?(Hash) &&
       response.include?('exists') && response['exists']
     {response['_id'] => response['_source']}
   end # save_docs
@@ -212,7 +212,7 @@ class ElasticSearchRasi
     url, data = "#{@url}/#{idx}/_search", Oj.dump(query)
     response  = request_elastic(
       :post, url, data
-    ) or return nil
+    ) or return {}
     parse_response response
   end # count
 
