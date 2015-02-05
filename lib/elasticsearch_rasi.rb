@@ -146,10 +146,6 @@ class ElasticSearchRasi
     ids = [ids] unless ids.kind_of?(Array)
     return {} if ids.empty?
 
-    if ids.count == 1 && @direct_idx == false
-      return get_doc(ids.first, idx, type)
-    end
-
     url, docs = "#{idx}/_search", {}
     array_slice_indexes(ids).each { |slice|
       data = get_docs_query(
@@ -191,16 +187,6 @@ class ElasticSearchRasi
       to_save = docs
     else # failsafe
       raise "Incorrect docs supplied (#{docs.class})"
-    end
-
-    # saving single document via direct POST request
-    if to_save.count == 1
-      response = request_elastic(
-        :post,
-        "#{idx}/#{type}/#{to_save.first['id']}",
-        Oj.dump(to_save.first)
-      )
-      return response
     end
 
     # more than 1 document save via BULK

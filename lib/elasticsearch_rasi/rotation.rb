@@ -30,6 +30,10 @@ module Rotation
   private
 
   def check_opts(rotate_type, opts)
+    # YAML supports only strings
+    opts        = Util::hash_str_to_hashes opts
+    rotate_type = rotate_type.to_sym
+
     raise ArgumentError.new("Missing index in config for '#{rotate_type}'") if
       (rotate_type == :node && @idx_node_read.nil?) ||
       (rotate_type == :mention && @idx_mention_read.nil?)

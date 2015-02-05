@@ -10,6 +10,12 @@ module Util
     new_h
   end
 
+  def self.hash_str_to_hashes h
+    new_h = {}
+    h.each_pair { |k, v| new_h[k.to_sym] = h[k] }
+    new_h
+  end
+
   # assemble additional parameter string from options in hash
   # e.g. {'arg1' => 'val1', 'arg2' => 'val2'} => 'arg1=val1&arg2=val2'
   def self.param_str(h, join = '&')
