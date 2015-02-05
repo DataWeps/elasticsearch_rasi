@@ -49,7 +49,7 @@ module Rotation
     [:read_age, :rotation_age].each { |key|
       @opts_rotation[key] = Util::parse_date_offset(opts[key])
     }
-    @opts_rotation[:close_age] = [false, nil].include?(opts[:close_age]) ?
+    @opts_rotation[:close_age] = [false, nil, 'false'].include?(opts[:close_age]) ?
       false : Util::parse_date_offset(opts[:close_age])
     true
   end
