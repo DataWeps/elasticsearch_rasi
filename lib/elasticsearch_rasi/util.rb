@@ -18,5 +18,19 @@ module Util
     arr.join join
   end
 
+  def self.parse_date_offset offset
+    if offset.kind_of?(Integer) || offset =~ /^\d+(?:h(?:ours?)?)?$/i
+      return Time.at(Time.now - offset.to_i * 3600)
+    elsif offset =~ /^\d+d(?:ays?)?$/i
+      return Time.at(Time.now - offset.to_i * 86400)
+    elsif offset =~ /^20\d{2}-[01]\d-[0-3]\d$/
+      return Time.local(*offset.split('-'))
+    else # should not happen
+      raise ArgumentError.new(
+        "Failed to parse time/offset specification '#{offset}'"
+      )
+    end
+  end
+
 end # Util
 

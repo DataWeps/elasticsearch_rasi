@@ -8,17 +8,15 @@ module Request
 
   def request_elastic(method, url, data = nil, params = {})
     req_params = []
-    req_params.push(method, url)
-    req_params << data   if data && !data.empty?
+    req_params.push(method, "#{@url}/#{url}")
+    req_params << data   if data
     req_params << params if params && !params.empty?
 
-    GLogg.l_f{ req_params }
-
-    content_type_position = method == :get ? 2 : 3
+    content_type_position = method == :get ? 2 : 4
     if req_params[content_type_position].nil?
-      req_params << CONTENT_TYPE
-    else
-      req_params[-1].merge(CONTENT_TYPE)
+      req_params << CONTENT_TYPE.dup
+    elsif !req_params[-1].include?(:content_type)
+      req_params[-1] = req_params[-1].merge(CONTENT_TYPE)
     end
 
     response = nil

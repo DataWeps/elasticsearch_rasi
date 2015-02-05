@@ -12,6 +12,7 @@ require 'elasticsearch_rasi/request'
 require 'elasticsearch_rasi/scroll'
 require 'elasticsearch_rasi/node'
 require 'elasticsearch_rasi/mention'
+require 'elasticsearch_rasi/rotation'
 
 class ElasticSearchRasi
 
@@ -20,6 +21,7 @@ class ElasticSearchRasi
   include Scroll
   include Node
   include Mention
+  include Rotation
 
   Oj.default_options = {:mode => :compat}
   SLICES     = 250
@@ -27,6 +29,7 @@ class ElasticSearchRasi
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
   attr_accessor :idx, :idx_node_read, :idx_node_write
   attr_accessor :idx_mention_read, :idx_mention_write
+  attr_accessor :idx_opts
 
   # idx - index name OR index type
   # opts - optional configuration:
@@ -37,13 +40,16 @@ class ElasticSearchRasi
   #   :log_file
   #   :logg_level - GLogg::??
   def initialize(idx, opts = {})
-    return false unless idx
     opts[:direct_idx] = false unless opts.include?(:direct_idx)
     @direct_idx       = opts[:direct_idx] || false
 
     $ES ||= {
+      # example
+      # -------
+      # :db_url => 'http://localhost:9200',
+
       # :yelp => {
-      #   :base           => 'yelp',
+      #   :base           => 'yelp_cz',
       #   :node_suffix    => '_places',
       #   :mention_suffix => '_reviews',
 
@@ -52,8 +58,13 @@ class ElasticSearchRasi
 
       #   :mention_read   => '',
       #   :mention_write  => '_current',
-      # }
+
+      # },
+
+      # :logging => true,
+      # :log_file => 'elasticsearch.log'
     }
+
     if (opts[:logging] || $ES[:logging])
       GLogg.ini(
         opts[:log_file]  || $ES[:log_file]  || LOG_FILE,
@@ -72,10 +83,11 @@ class ElasticSearchRasi
     else
       raise ArgumentError.new("Missing defined index '#{idx}'") unless
         $ES.include?(idx.to_sym)
-      @idx_node_read     = get_index($ES[idx.to_sym], :node, :read)
-      @idx_node_write    = get_index($ES[idx.to_sym], :node, :write)
-      @idx_mention_read  = get_index($ES[idx.to_sym], :mention, :read)
-      @idx_mention_write = get_index($ES[idx.to_sym], :mention, :write)
+      @idx_opts          = $ES[idx.to_sym]
+      @idx_node_read     = get_index(:node, :read)
+      @idx_node_write    = get_index(:node, :write)
+      @idx_mention_read  = get_index(:mention, :read)
+      @idx_mention_write = get_index(:mention, :write)
     end
 
     @ua_opts = {
@@ -84,16 +96,16 @@ class ElasticSearchRasi
       :retry_45       => false,
       :req_retry_wait => 1,
       :req_attempts   => 2,
-      :logging        => false
+      :logging        => opts[:logging] || false,
     }.merge(opts[:ua] || $ES[:ua] || {})
     @ua = Curburger.new @ua_opts
   end
 
-  def get_index(idx, type, access)
-    return nil unless idx && !idx.empty?
-    base  = "#{idx[:prefix]}#{idx[:base]}"
-    index = "#{base}#{idx[:"#{type}_suffix"]}"
-    "#{index}#{idx[:"#{type}_#{access}"]}"
+  def get_index(type, access)
+    return nil unless @idx_opts && !@idx_opts.empty?
+    base  = "#{@idx_opts[:prefix]}#{@idx_opts[:base]}"
+    index = "#{base}#{@idx_opts[:"#{type}_suffix"]}"
+    "#{index}#{@idx_opts[:"#{type}_#{access}"]}"
   end
 
 
@@ -103,7 +115,7 @@ class ElasticSearchRasi
     id = [id] unless id.kind_of?(Array)
     return {} if id.empty?
 
-    url, docs = "#{@url}/#{idx}/_mget", {}
+    url, docs = "#{idx}/_mget", {}
     array_slice_indexes(id).each { |slice|
       data = Oj.dump({'ids' => slice})
       response  = request_elastic(
@@ -138,7 +150,7 @@ class ElasticSearchRasi
       return get_doc(ids.first, idx, type)
     end
 
-    url, docs = "#{@url}/#{idx}/_search", {}
+    url, docs = "#{idx}/_search", {}
     array_slice_indexes(ids).each { |slice|
       data = get_docs_query(
         {'ids' => {'type' => type, 'values' => slice}},
@@ -158,7 +170,7 @@ class ElasticSearchRasi
   #   - return nil in case of error, otherwise {id => document}
   def get_doc(key, idx = @idx, type = 'document')
     response = request_elastic(
-      :get, "#{@url}/#{idx}/#{type}/#{key}"
+      :get, "#{idx}/#{type}/#{key}"
     )
     return {} unless response && response.kind_of?(Hash) &&
       response.include?('exists') && response['exists']
@@ -185,7 +197,7 @@ class ElasticSearchRasi
     if to_save.count == 1
       response = request_elastic(
         :post,
-        "#{@url}/#{idx}/#{type}/#{to_save.first['id']}",
+        "#{idx}/#{type}/#{to_save.first['id']}",
         Oj.dump(to_save.first)
       )
       return response
@@ -201,7 +213,7 @@ class ElasticSearchRasi
       }
       return nil if bulk.empty? # should not happen
       bulk    += "\n" # empty line in the end required
-      request_elastic(:post, "#{@url}/_bulk", bulk)
+      request_elastic(:post, "_bulk", bulk)
     }
     true
   end # save_docs
@@ -209,7 +221,7 @@ class ElasticSearchRasi
   # query - hash of the query to be done
   # return nil in case of error, rsp['hits'] otherwise
   def search(query, idx)
-    url, data = "#{@url}/#{idx}/_search", Oj.dump(query)
+    url, data = "#{idx}/_search", Oj.dump(query)
     response  = request_elastic(
       :post, url, data
     ) or return {}
@@ -219,7 +231,7 @@ class ElasticSearchRasi
   # query - hash of the query to be done
   # return nil in case of error, document count otherwise
   def count(query, idx)
-    url  = "#{@url}/#{idx}/_search"
+    url  = "#{idx}/_search"
     rsp = request_elastic(
       :post,
       url,
@@ -231,7 +243,7 @@ class ElasticSearchRasi
   # query - direct GET query through URL
   # return nil in case of error, documents (unprepared) otherwise
   def direct_query(idx, query, what = '_search')
-    url = "#{@url}/#{idx}/#{what}?#{query}"
+    url = "#{idx}/#{what}?#{query}"
     request_elastic :get, url
   end # direct_query
 

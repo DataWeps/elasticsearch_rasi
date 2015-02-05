@@ -8,13 +8,12 @@ module Scroll
   # {:scroll => <scroll_param>, :scroll_id => <scroll_id>, :total => total}
   def scan(query, idx, opts = {})
     o = {'scroll' => '10m', 'size' => ElasticSearchRasi::SLICES}.merge Util.hash_keys_to_str opts
-    url = "#{@url}/#{idx}/_search?search_type=scan&#{Util.param_str o}"
+    url = "#{idx}/_search?search_type=scan&#{Util.param_str o}"
 
     rsp = request_elastic(
       :post,
       url,
       Oj.dump(query),
-      {:content_type => 'application/json'}
     ) or return false
 
     {
@@ -32,7 +31,7 @@ module Scroll
   def scroll_each scan
     count, total = 0, nil
     while true
-      url = "#{@url}/_search/scroll?scroll=#{CGI.escape scan[:scroll]}&" +
+      url = "_search/scroll?scroll=#{CGI.escape scan[:scroll]}&" +
         "scroll_id=#{CGI.escape scan[:scroll_id]}"
 
       rsp = request_elastic(:get, url)

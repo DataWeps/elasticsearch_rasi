@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
     "lib/elasticsearch_rasi/scroll.rb",
     "lib/elasticsearch_rasi/node.rb",
     "lib/elasticsearch_rasi/mention.rb",
+    "lib/elasticsearch_rasi/rotation.rb",
   ]
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.homepage    =
