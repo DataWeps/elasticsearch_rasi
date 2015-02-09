@@ -2,8 +2,8 @@
 
 Gem::Specification.new do |s|
   s.name        = 'elasticsearch_rasi'
-  s.version     = '0.1.0'
-  s.date        = '2015-01-20'
+  s.version     = '0.2.0'
+  s.date        = '2015-02-09'
   s.summary     = "ElasticSearch for Rasi"
   s.description = "Post and mentions elasticsearch"
   s.authors     = ["Tomas Hrabal"]

@@ -4,7 +4,8 @@ module Mention
 
   # alias method for getting mentions
   def get_mentions(ids, idx = @idx_mention_read, type = 'document')
-    get_docs(ids, idx, type)
+    @idx_opts[:mention_alias] ?
+      get_docs_by_filter(ids, idx, type) : get_docs_by_mget(ids, idx, type)
   end
 
   # alias method for saving mentions

@@ -59,6 +59,11 @@ class ElasticSearchRasi
       #   :mention_read   => '',
       #   :mention_write  => '_current',
 
+      #   :node_client    => 'yelp_places',
+      #   :mention_client => 'yelp_reviews',
+
+      #   :node_alias     => false,
+      #   :mention_alias  => true,
       # },
 
       # :logging => true,
@@ -84,10 +89,14 @@ class ElasticSearchRasi
       raise ArgumentError.new("Missing defined index '#{idx}'") unless
         $ES.include?(idx.to_sym)
       @idx_opts          = $ES[idx.to_sym]
+      @idx_opts[:node_alias]    ||= false
+      @idx_opts[:mention_alias] ||= false
       @idx_node_read     = get_index(:node, :read)
       @idx_node_write    = get_index(:node, :write)
       @idx_mention_read  = get_index(:mention, :read)
       @idx_mention_write = get_index(:mention, :write)
+      @idx_node_read_client    = get_index(:node, :read, :client)
+      @idx_mention_read_client = get_index(:mention, :read, :client)
     end
 
     @ua_opts = {
@@ -101,27 +110,31 @@ class ElasticSearchRasi
     @ua = Curburger.new @ua_opts
   end
 
-  def get_index(type, access)
+  def get_index(type, access, client_type = :system)
     return nil unless @idx_opts && !@idx_opts.empty?
-    base  = "#{@idx_opts[:prefix]}#{@idx_opts[:base]}"
-    index = "#{base}#{@idx_opts[:"#{type}_suffix"]}"
-    "#{index}#{@idx_opts[:"#{type}_#{access}"]}"
+    if client_type == :client && @idx_opts.include?("#{type}_client".to_sym)
+      @idx_opts["#{type}_client".to_sym]
+    elsif client_type == :system
+      base  = "#{@idx_opts[:prefix]}#{@idx_opts[:base]}"
+      index = "#{base}#{@idx_opts[:"#{type}_suffix"]}"
+      "#{index}#{@idx_opts[:"#{type}_#{access}"]}"
+    end
   end
 
 
-  # alias method for getting node document (page, user, group...)
-  def get_documents_by_mget(id, idx = @idx, type = 'document')
+  # alias method for getting documents
+  # - use for index without read alias - we can use _mget query
+  def get_docs_by_mget(id, idx = @idx, type = 'document')
     return {} unless id
     id = [id] unless id.kind_of?(Array)
     return {} if id.empty?
 
     url, docs = "#{idx}/_mget", {}
     array_slice_indexes(id).each { |slice|
-      data = Oj.dump({'ids' => slice})
       response  = request_elastic(
         :get,
         url,
-        {:data => data}
+        {:data => Oj.dump({'ids' => slice})}
       ) or return nil
       response['docs'].each { |doc|
         next unless doc['exists'] # non-existent document
@@ -139,9 +152,9 @@ class ElasticSearchRasi
     response.values.first
   end
 
-  # ids - single id or array of ids
-  # return nil in case of error, {id => doc} of documents found otherwise
-  def get_docs(ids, idx = @idx, type = 'document')
+  # alias method for getting documents
+  # - use for index with read alias - we have to use use _ids filter query
+  def get_docs_by_filter(ids, idx = @idx, type = 'document')
     return {} unless ids
     ids = [ids] unless ids.kind_of?(Array)
     return {} if ids.empty?

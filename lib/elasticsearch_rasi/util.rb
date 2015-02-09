@@ -25,17 +25,24 @@ module Util
   end
 
   def self.parse_date_offset offset
+    now_time = now
     if offset.kind_of?(Integer) || offset =~ /^\d+(?:h(?:ours?)?)?$/i
-      return Time.at(Time.now - offset.to_i * 3600)
+      return Time.at(now_time.to_time - offset.to_i * 3600)
     elsif offset =~ /^\d+d(?:ays?)?$/i
-      return Time.at(Time.now - offset.to_i * 86400)
+      return Time.at(now_time.to_time - offset.to_i * 86400)
+    elsif offset =~ /^\d+m(?:months?)?$/i
+      new_time  = now_time << offset.to_i
+      # new_time  = DateTime.now << offset.to_i
+      return Time.at(new_time.to_time)
     elsif offset =~ /^20\d{2}-[01]\d-[0-3]\d$/
       return Time.local(*offset.split('-'))
     else # should not happen
-      raise ArgumentError.new(
-        "Failed to parse time/offset specification '#{offset}'"
-      )
+      raise "Failed to parse time/offset specification '#{offset}'"
     end
+  end
+
+  def self.now
+    DateTime.now
   end
 
 end # Util
