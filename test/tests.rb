@@ -34,9 +34,4 @@ class ElasticSearchTest < Test::Unit::TestCase
     $ES = nil
   end
 
-  # def test
-  #   es = ElasticSearchRasi.new(:yelp)
-  #   p es.get_mentions(['1', '2'])
-  # end
-
 end

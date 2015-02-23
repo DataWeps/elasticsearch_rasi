@@ -27,6 +27,8 @@ class ElasticSearchRasi
   SLICES     = 250
   BULK_STORE = 500
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
+
+
   attr_accessor :idx, :idx_node_read, :idx_node_write
   attr_accessor :idx_mention_read, :idx_mention_write
   attr_accessor :idx_opts
@@ -263,4 +265,4 @@ class ElasticSearchRasi
     }
   end
 
-end # ElasticSearch
+end
