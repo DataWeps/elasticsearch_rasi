@@ -193,10 +193,10 @@ class ElasticSearchRasi
     return true unless docs && !docs.empty? # nothing to save
     to_save = []
     if docs.kind_of?(Hash) # convert to array
-      if docs.include?('id')
+      if docs.include?('_id')
         to_save << docs
       else
-        docs.each_pair { |id, doc| to_save << doc.merge({'id' => id}) }
+        docs.each_pair { |id, doc| to_save << doc.merge({'_id' => id}) }
       end
     elsif docs.kind_of? Array
       to_save = docs
@@ -208,8 +208,9 @@ class ElasticSearchRasi
     array_slice_indexes(to_save, BULK_STORE).each { |slice|
       bulk = ''
       slice.each { |doc|
+        id_save = doc.delete("_id") or next
         bulk += %Q(
-          {"index": {"_index": "#{idx}", "_id": "#{doc['id']}", "_type": "#{type}"}}\n)
+          {"index": {"_index": "#{idx}", "_id": "#{id_save}", "_type": "#{type}"}}\n)
         bulk += Oj.dump(doc) + "\n"
       }
       return nil if bulk.empty? # should not happen
