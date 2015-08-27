@@ -9,9 +9,9 @@ class ElasticSearchRasi
         "size"  => size,
         "query" => {
           "filtered" => {
-            "filter" => query
-          },
-          "_cache" => false
+            "filter" => query,
+            "_cache" => false
+          }
         }
       }
     end
@@ -22,9 +22,9 @@ class ElasticSearchRasi
           "filtered" => {
             "filter" => {
               "bool" => query
-            }
-          },
-          "_cache" => false
+            },
+            "_cache" => false
+          }
         }
       }
     end
@@ -36,9 +36,9 @@ class ElasticSearchRasi
           "filtered" => {
             "filter" => {
               "bool" => query
-            }
-          },
-          "_cache" => false
+            },
+            "_cache" => false
+          }
         }
       }
     end
