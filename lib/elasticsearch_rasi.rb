@@ -139,7 +139,7 @@ class ElasticSearchRasi
         {:data => Oj.dump({'ids' => slice})}
       ) or return nil
       response['docs'].each { |doc|
-        next unless doc['exists'] # non-existent document
+        next if !doc['exists'] && !doc["found"]
         docs[doc['_id']] = doc['_source']
       }
     }
