@@ -26,6 +26,7 @@ class ElasticSearchRasi
   Oj.default_options = {:mode => :compat}
   SLICES     = 250
   BULK_STORE = 500
+  SCROLL     = "1m"
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
 

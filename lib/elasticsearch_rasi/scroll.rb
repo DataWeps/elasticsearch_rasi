@@ -4,13 +4,22 @@ class ElasticSearchRasi
 
   module Scroll
 
+    def scan_search(query, idx, opts, &block)
+      scroll = scan(query, idx, opts) or return 0
+      scroll_each scroll, &block
+    end
+
+
     # query - hash of the query to be done
     # opts can override scroll validity, size, etc.
     # return nil in case of error, otherwise scroll hash
     # {:scroll => <scroll_param>, :scroll_id => <scroll_id>, :total => total}
     def scan(query, idx, opts = {})
-      o = {'scroll' => '10m', 'size' => ElasticSearchRasi::SLICES}.merge Util.hash_keys_to_str opts
-      url = "#{idx}/_search?search_type=scan&#{Util.param_str o}"
+      opts = {
+        "scroll" => ElasticSearchRasi::SCROLL,
+        "size"   => ElasticSearchRasi::SLICES
+      }.merge(Util.hash_keys_to_str(opts))
+      url = "#{idx}/_search?search_type=scan&#{Util.param_str opts}"
 
       rsp = request_elastic(
         :post,
@@ -19,7 +28,7 @@ class ElasticSearchRasi
       ) or return false
 
       {
-        :scroll    => o['scroll'],
+        :scroll    => opts['scroll'],
         :scroll_id => rsp['_scroll_id'],
         :total     => rsp['hits']['total'].to_i
       }
@@ -30,7 +39,7 @@ class ElasticSearchRasi
     # each document is yielded for processing
     # return nil in case of error (any of the requests failed),
     # count of documents scrolled otherwise
-    def scroll_each scan
+    def scroll_each scan, &block
       count, total = 0, nil
       while true
         url = "_search/scroll?scroll=#{CGI.escape scan[:scroll]}&" +
@@ -47,7 +56,7 @@ class ElasticSearchRasi
         total ||= rsp['hits']['total'].to_i
 
         rsp['hits']['hits'].each { |document|
-          yield document
+          block.call document
           count += 1
         }
         break if rsp['hits']['hits'].empty?
