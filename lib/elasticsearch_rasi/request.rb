@@ -10,7 +10,8 @@ class ElasticSearchRasi
 
     def request_elastic(method, url, data = nil, params = {})
       req_params = []
-      req_params.push(method, "#{@url}/#{url}")
+      _url = "#{@url}/#{url}"
+      req_params.push(method, _url)
       req_params << data   if data
       req_params << params if params && !params.empty?
 
@@ -23,7 +24,7 @@ class ElasticSearchRasi
 
       response = nil
       GLogg.l_i {
-        "ElasticSearch.attempt_elastic: \nmethod: #{method}\nurl: '#{url}'\n" +
+        "ElasticSearch.attempt_elastic: \nmethod: #{method}\nurl: '#{_url}'\n" +
         "#{data && !data.empty?     ? "query: '#{data}'\n" : ''}" +
         "#{params && !params.empty? ? "params: '#{data}'" : ''}"
       }

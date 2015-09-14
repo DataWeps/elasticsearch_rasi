@@ -184,8 +184,8 @@ class ElasticSearchRasi
     response = request_elastic(
       :get, "#{idx}/#{type}/#{key}"
     )
-    return {} unless response && response.kind_of?(Hash) &&
-      response.include?('exists') && response['exists']
+    return {} if !response || !response.kind_of?(Hash) ||
+      !(response['exists'] || response['found'])
     {response['_id'] => response['_source']}
   end # save_docs
 

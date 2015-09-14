@@ -42,8 +42,8 @@ class ElasticSearchRasi
     def scroll_each scan, &block
       count, total = 0, nil
       while true
-        url = "_search/scroll?scroll=#{CGI.escape scan[:scroll]}&" +
-          "scroll_id=#{CGI.escape scan[:scroll_id]}"
+        url = "_search/scroll?scroll=#{scan[:scroll]}&" +
+          "scroll_id=#{scan[:scroll_id]}"
 
         rsp = request_elastic(:get, url)
 

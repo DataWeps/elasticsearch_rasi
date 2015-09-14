@@ -34,4 +34,9 @@ class ElasticSearchTest < Test::Unit::TestCase
     $ES = nil
   end
 
+  def test_get_document
+    @es = ElasticSearchRasi.new :rss_feeds, { direct_idx: true }
+    @es.get_document 'http%3A%2F%2Fkrkonossky.denik.cz%2Frss%2Fzpravy_region.htm'
+  end
+
 end
