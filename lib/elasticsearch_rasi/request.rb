@@ -1,66 +1,36 @@
 # encoding:utf-8
-
-class ElasticSearchRasi
-
+class ElasticsearchRasi
   module Request
+    CONTENT_TYPE = { content_type: 'application/json' }
 
-    CONTENT_TYPE = {:content_type => 'application/json'}
+    def request(method, params)
+      send_request(method, params)
+    end
+
+    def clear_request(method, params)
+      response = send_request(method, params)
+      return false if response.include?(:error)
+      response
+    end
 
     private
 
-    def request_elastic(method, url, data = nil, params = {})
-      req_params = []
-      _url = "#{@url}/#{url}"
-      req_params.push(method, _url)
-      req_params << data   if data
-      req_params << params if params && !params.empty?
-
-      content_type_position = method == :get ? 2 : 4
-      if req_params[content_type_position].nil?
-        req_params << CONTENT_TYPE.dup
-      elsif !req_params[-1].include?(:content_type)
-        req_params[-1] = req_params[-1].merge(CONTENT_TYPE)
-      end
-
-      response = nil
-      GLogg.l_i {
-        "ElasticSearch.attempt_elastic: \nmethod: #{method}\nurl: '#{_url}'\n" +
-        "#{data && !data.empty?     ? "query: '#{data}'\n" : ''}" +
-        "#{params && !params.empty? ? "params: '#{data}'" : ''}"
-      }
-      response = attempt_elastic req_params
-
-      unless response && !response[:error]
-        return false if method == :get && response[:error] == "404 Not Found"
-        GLogg.l_f { "ElasticSearch.request_elastic: Failed #{req_params}\n " +
-          " Last error: '#{response[:error] if response && response.kind_of?(Hash)}'\n" +
-          " Response:\n '#{response[:content] if response && response.kind_of?(Hash)}'"
-        }
-        return false
-      end
-
+    def send_request(method, params)
+      counter = 0
       begin
-        return Oj.load(response[:content])
-      rescue SyntaxError, Oj::ParseError => e
-        GLogg.l_e { "ElasticSearch.request_elastic: Oj.load failed "}
+        return @es.send(method, params)
+      rescue Elasticsearch::Transport::Transport::Errors::InternalServerError => e
+        return { error: e.message }
+      rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e
+        return { error: e.message }
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+        counter += 1
+        if counter < ES[:connect_attempts]
+          sleep ES[:connect_sleep]
+          retry
+        end
       end
-      return false
+      false
     end
-
-    def attempt_elastic(params)
-      begin
-        @ua.reset
-        rsp = @ua.send(*params)
-        return rsp
-      rescue => e
-        GLogg.l_f {
-          "ElasticSearch.attempt_elastic: #{params} : '#{e.message}'" +
-          " \n #{e.backtrace.inspect}"
-        }
-      end
-      return false
-    end
-
   end
-
 end

@@ -1,7 +1,7 @@
 # encoding:utf-8
 require 'elasticsearch_rasi/util'
 
-class ElasticSearchRasi
+class ElasticsearchRasi
 
   module Rotation
 

@@ -1,12 +1,23 @@
 # encoding:utf-8
 
-class ElasticSearchRasi
-
+class ElasticsearchRasi
   module Query
-
-    def get_docs_query(query, size = ElasticSearchRasi::SLICES)
+    def get_docs_query(query, size = ElasticsearchRasi::SLICES)
       {
         "size"  => size,
+        "query" => {
+          "filtered" => {
+            "filter" => query,
+            "_cache" => false
+          }
+        }
+      }
+    end
+
+    def get_docs_query_ids(query, size = ElasticsearchRasi::SLICES)
+      {
+        "size"   => size,
+        "fields" => [],
         "query" => {
           "filtered" => {
             "filter" => query,
@@ -42,7 +53,5 @@ class ElasticSearchRasi
         }
       }
     end
-
   end
-
 end
