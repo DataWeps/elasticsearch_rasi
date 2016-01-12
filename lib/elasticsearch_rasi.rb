@@ -76,7 +76,9 @@ class ElasticsearchRasi
     @mention
   end
 
-  private def get_index(opts, type, access, client_type = :system)
+private
+
+  def get_index(opts, type, access, client_type = :system)
     return nil unless opts && !opts.empty?
     if client_type == :client && opts.include?("#{type}_client".to_sym)
       opts["#{type}_client".to_sym]

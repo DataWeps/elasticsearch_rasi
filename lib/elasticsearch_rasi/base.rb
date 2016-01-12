@@ -1,7 +1,8 @@
 # encoding: utf-8
+require 'active_support/core_ext/hash'
+
 require_relative 'request'
 require_relative 'query'
-
 class ElasticsearchRasi
   module Base
     include Request
@@ -22,7 +23,7 @@ class ElasticsearchRasi
         slice_params.merge!(fields: []) unless source
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
-          next if !doc['exists'] && !doc["found"]
+          next if !doc['exists'] && !doc['found']
           docs[doc['_id']] = doc['_source']
         end
       end
@@ -72,7 +73,12 @@ class ElasticsearchRasi
       return true unless docs && !docs.empty? # nothing to save
       to_save =
         if docs.is_a?(Hash) # convert to array
-          docs.include?('_id') ? [docs] : docs.map { |id, doc| doc.merge('_id' => id) }
+          docs.stringify_keys!
+          if docs.include?('_id')
+            [docs]
+          else
+            docs.map { |id, doc| doc.merge('_id' => id) }
+          end
         else
           docs
         end
@@ -80,13 +86,13 @@ class ElasticsearchRasi
       errors = []
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
         response = request(:bulk, body: create_bulk(slice, idx, type, method))
-        if response['errors']
-          errors << (response['items'].map do |item|
-            next unless item[item.keys[0]].include?('error')
-            item[item.keys[0]]
-          end).compact
+        next unless response['errors']
+        errors << response['items'].map do |item|
+          next unless item[item.keys[0]].include?('error')
+          item[item.keys[0]]
         end
       end
+      errors.compact!
 
       errors.empty? ? true : errors.flatten
     end # save_docs
@@ -105,12 +111,13 @@ class ElasticsearchRasi
 
     # query - hash of the query to be done
     # return nil in case of error, document count otherwise
-    def count(query, idx, type = 'document')
-      request(
+    def query_count(query, idx, type = 'document')
+      response = request(
         :count,
         index: idx,
         type:  type,
-        body:  query) || (return 0)
+        body:  query)
+      response['count'].to_i || 0
     end
   end
 end
