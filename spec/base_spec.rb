@@ -35,6 +35,21 @@ describe ElasticsearchRasi do
       expect(@rasi_es.config.size).not_to eq(0)
     end
 
+    it 'direct config' do
+      rasi_es = ElasticsearchRasi.new(:disputatio, ES)
+      expect(rasi_es.config[:connect][:host]
+        ).to eq(ES[:disputatio][:connect][:host])
+    end
+
+    it 'direct_idx config' do
+      rasi_es = ElasticsearchRasi.new(:example,
+        direct_idx: true,
+        idx_write: 'index',
+        idx_read:  'index',
+        connect: { url: 'localhost:9200' })
+      expect(rasi_es.config[:idx_write]).to eq('index')
+    end
+
     it 'count' do
       expect(test_count).to be(0)
     end

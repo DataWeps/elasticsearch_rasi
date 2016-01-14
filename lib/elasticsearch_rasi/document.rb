@@ -53,7 +53,6 @@ class ElasticsearchRasi
       query_count(query, idx, type)
     end
 
-
     def refresh(idx = @config[:idx_read])
       @es.indices.refresh(index: idx)
     end

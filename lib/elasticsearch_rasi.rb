@@ -45,9 +45,9 @@ class ElasticsearchRasi
     @config =
       if direct_idx
         # main node index (fb_page, topic, article etc ...)
-        { idx: opts.include?(idx.to_sym) ? opts[idx.to_sym] : idx }
+        ES && ES.include?(idx.to_sym) ? ES[idx.to_sym] : opts
       else
-        opts = (ES[idx.to_sym] || opts).merge(opts)
+        opts = (ES[idx.to_sym] || opts)
         raise(ArgumentError, "Missing defined index '#{idx}'") if
           !opts || opts.empty?
         {
@@ -74,6 +74,11 @@ class ElasticsearchRasi
   def node
     @mention ||= ElasticsearchRasi::Node.new(@es, @config)
     @mention
+  end
+
+  def document
+    @document ||= ElasticsearchRasi::Document.new(@es, @config)
+    @document
   end
 
 private
