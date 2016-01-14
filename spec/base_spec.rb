@@ -39,10 +39,22 @@ describe ElasticsearchRasi do
       expect(test_count).to be(0)
     end
 
-    it 'count' do
+    it 'count and save document' do
       @rasi_es.mention.save_document(_id: @id, resource: 'zpravy.idnes')
       @rasi_es.mention.refresh
       expect(test_count).to be(1)
+    end
+
+    it 'update document' do
+      content_before = 'a'
+      @es.index(id: @id, type: @rasi_es.config[:mention_type],
+        index: @rasi_es.config[:idx_mention_write], body: {
+          resource: 'zpravy.idnes', content: content_before })
+      @rasi_es.mention.refresh
+      @rasi_es.mention.update_document('_id' => @id, content: 'different content')
+      @rasi_es.mention.refresh
+      document = @rasi_es.mention.get_document([@id])
+      document[@id]['content'] != content_before
     end
 
     after(:context) do

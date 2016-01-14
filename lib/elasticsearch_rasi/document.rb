@@ -37,6 +37,14 @@ class ElasticsearchRasi
       save_docs(mentions, idx, type, method)
     end
 
+    def update_document(
+      mentions,
+      idx = @config[:idx_write],
+      type = @config[:type],
+      method = :update)
+      save_docs(mentions, idx, type, method)
+    end
+
     def scroll(query, idx = @config[:idx_read], params = {}, &block)
       scan_search(query, idx, params, &block)
     end
@@ -44,6 +52,7 @@ class ElasticsearchRasi
     def count(query, idx = @config[:idx_read], type = @config[:type])
       query_count(query, idx, type)
     end
+
 
     def refresh(idx = @config[:idx_read])
       @es.indices.refresh(index: idx)
