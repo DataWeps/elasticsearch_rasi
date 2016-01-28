@@ -31,18 +31,18 @@ class ElasticsearchRasi
     # alias method for saving node document (page, user, group...)
     def save_document(
       mentions,
+      method = :index,
       idx = @config[:idx_write],
-      type = @config[:type],
-      method = :index)
-      save_docs(mentions, idx, type, method)
+      type = @config[:type])
+      save_docs(mentions, method, idx, type)
     end
 
     def update_document(
       mentions,
+      method = :update,
       idx = @config[:idx_write],
-      type = @config[:type],
-      method = :update)
-      save_docs(mentions, idx, type, method)
+      type = @config[:type])
+      save_docs(mentions, method, idx, type)
     end
 
     def scroll(query, idx = @config[:idx_read], params = {}, &block)

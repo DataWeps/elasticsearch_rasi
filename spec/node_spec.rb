@@ -67,7 +67,7 @@ describe ElasticsearchRasi do
           'title'   => 'titulek',
           'content' => 'titulek obsah'
         },
-        'not-exixts-document', 'document', :create)).to be_a(Array)
+        :create, 'not-exixts-document', 'document')).to be_a(Array)
     end
   end
 end

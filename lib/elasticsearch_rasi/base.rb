@@ -69,7 +69,7 @@ class ElasticsearchRasi
     end # save_docs
 
     # docs - [docs] or {id => doc}
-    def save_docs(docs, idx = @idx, type = 'document', method = :index)
+    def save_docs(docs, method = :index, idx = @idx, type = 'document')
       return true unless docs && !docs.empty? # nothing to save
       to_save =
         if docs.is_a?(Hash) # convert to array
@@ -77,7 +77,10 @@ class ElasticsearchRasi
           if docs.include?('_id')
             [docs]
           else
-            docs.map { |id, doc| doc.merge('_id' => id) }
+            docs.map do |id, doc|
+              next unless id
+              doc.merge('_id' => id)
+            end.compact
           end
         else
           docs
@@ -85,7 +88,7 @@ class ElasticsearchRasi
       raise "Incorrect docs supplied (#{docs.class})" unless to_save.is_a?(Array)
       errors = []
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
-        response = request(:bulk, body: create_bulk(slice, idx, type, method))
+        response = request(:bulk, body: create_bulk(slice, idx, method, type))
         next unless response['errors']
         errors << response['items'].map do |item|
           next unless item[item.keys[0]].include?('error')

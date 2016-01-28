@@ -15,7 +15,7 @@ class ElasticsearchRasi
       response['hits']['hits'].each { |doc| docs[doc['_id']] = doc['_source'] }
     end
 
-    def create_bulk(slice, idx, type = 'document', method = :index)
+    def create_bulk(slice, idx, method = :index, type = 'document')
       bulk = slice.map do |doc|
         id_save = doc.delete("_id") || next
         doc = { :doc => doc } if method == :update
@@ -23,9 +23,8 @@ class ElasticsearchRasi
           method => {
             _index: idx,
             _id:    id_save,
-            _type:  type,
-            data:   doc
-          }
+            _type:  type
+          }.merge(doc.empty? ? {} : { data: doc })
         }
       end
       bulk.compact
