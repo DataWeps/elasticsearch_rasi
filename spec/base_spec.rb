@@ -68,8 +68,8 @@ describe ElasticsearchRasi do
       @rasi_es.mention.refresh
       @rasi_es.mention.update_document('_id' => @id, content: 'different content')
       @rasi_es.mention.refresh
-      document = @rasi_es.mention.get_document([@id])
-      document[@id]['content'] != content_before
+      document = @rasi_es.mention.get(@id)
+      document['content'] != content_before
     end
 
     after(:context) do

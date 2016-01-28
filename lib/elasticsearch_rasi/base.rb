@@ -20,7 +20,7 @@ class ElasticsearchRasi
         slice_params = params.merge(
           body: { ids: slice }
         )
-        slice_params.merge!(fields: []) unless source
+        slice_params[:fields] = [] unless source
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
           next if !doc['exists'] && !doc['found']
@@ -28,15 +28,6 @@ class ElasticsearchRasi
         end
       end
       source ? docs : docs.keys
-    end
-
-    # alias method for requesting direct document
-    #   - uses get_doc method
-    #   - return {document} without id =>
-    def get_document(id, idx = @idx, type = 'document')
-      response = request(
-        :get, id: id, index: idx, type: type, ingnore: 404) || (return nil)
-      response.values.first
     end
 
     # alias method for getting documents
@@ -61,11 +52,15 @@ class ElasticsearchRasi
 
     # get document from ES with direct query trough GET request
     #   - return nil in case of error, otherwise {id => document}
-    def get_doc(id, idx = @idx, type = 'document')
-      response = request(:get, index: idx, type: type, id: id)
+    def get_doc(id, idx = @idx, type = 'document', just_source = true)
+      response = request(:get, index: idx, type: type, id: id, ignore: 404)
       return {} if !response || !response.is_a?(Hash) ||
                    !(response['exists'] || response['found'])
-      { response['_id'] => response['_source'] }
+      if just_source
+        response['_source']
+      else
+        { response['_id'] => response['_source'] }
+      end
     end # save_docs
 
     # docs - [docs] or {id => doc}

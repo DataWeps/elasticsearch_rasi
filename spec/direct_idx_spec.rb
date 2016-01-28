@@ -35,7 +35,7 @@ describe ElasticsearchRasi do
         'content' => 'ahoj obsah')).to eq(true)
       @es.indices.refresh(
         index: @rasi_es.config[:idx_mention_write])
-      expect(@rasi_es.document.get_document(['1'])['1']['title']).to eq('ahoj')
+      expect(@rasi_es.document.get('1')['title']).to eq('ahoj')
     end
 
     after(:context) do

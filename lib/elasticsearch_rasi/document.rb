@@ -24,8 +24,17 @@ class ElasticsearchRasi
       end
     end
 
+    # return one document['_source'] by its id
+    def get(id, idx = @config[:idx_read], type = @config[:type])
+      get_doc(id, idx, type)
+    end
+
     def get_ids(ids, idx = @config[:idx_read], type = @config[:type])
-      get_document(ids, idx, type, false)
+      if @config[:alias]
+        get_docs_by_filter(ids, idx, type, false)
+      else
+        get_docs_by_mget(ids, idx, type, false)
+      end
     end
 
     # alias method for saving node document (page, user, group...)
