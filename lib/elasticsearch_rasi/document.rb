@@ -54,7 +54,7 @@ class ElasticsearchRasi
       save_docs(mentions, method, idx, type)
     end
 
-    def scroll(query, idx = @config[:idx_read], params = {}, &block)
+    def scroll(query, params = {}, idx = @config[:idx_read], &block)
       scan_search(query, idx, params, &block)
     end
 
