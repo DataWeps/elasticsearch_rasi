@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
     'http://rubygems.org/gems/hola'
   s.license       = 'MIT'
 
-  s.add_dependency 'glogg'
   s.add_dependency 'curburger'
   s.add_dependency 'oj', '~> 2.11'
   s.add_development_dependency "test-unit"

@@ -150,8 +150,6 @@ class ElasticSearchRasi
       return false unless result =
         get_indexes("#{recognize_index(:write)}")
       if result.count > 1
-        GLogg.l_f{"#{self.class}.perform: Two current indexes for" +
-          " '#{recognize_index(:write)}' : #{result.keys}"}
         return false
       end
 
@@ -255,7 +253,6 @@ class ElasticSearchRasi
       result = request_elastic :get, "#{index_alias}/_alias/*"
       return false unless result # already logged
       if result['error']
-        GLogg.l_f{ "#{self.class}.perform: Unknown index '#{index_alias}'" }
         return nil
       end
       result
@@ -265,9 +262,6 @@ class ElasticSearchRasi
     def parse_index_date(key, suffix)
       date = key['aliases'].select { |a| a.match(/#{suffix}_(.+)/) }
       if date.count == 0
-        GLogg.l_f{"#{self.class}.perform: Unknow index alias for recognize age." +
-          " Didn't find suffix '#{suffix}' for " +
-          "'#{key['aliases']}'"}
         return nil
       end
       date = date.keys.first =~ /#{suffix}_(.+)/i ? $1.gsub('_', '-') : nil

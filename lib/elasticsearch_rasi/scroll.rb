@@ -48,7 +48,6 @@ class ElasticSearchRasi
         rsp = request_elastic(:get, url)
 
         unless rsp
-          GLogg.l_f { 'ElasticSearch.scroll_each: FAILED SCROLL' }
           return count
         end
 

@@ -14,6 +14,9 @@ require 'elasticsearch_rasi/node'
 require 'elasticsearch_rasi/mention'
 require 'elasticsearch_rasi/rotation'
 
+# logger
+require 'elasticsearch_rasi/mylog'
+
 class ElasticSearchRasi
 
   include Query
@@ -28,7 +31,6 @@ class ElasticSearchRasi
   BULK_STORE = 500
   SCROLL     = "1m"
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
-
 
   attr_accessor :idx, :idx_node_read, :idx_node_write
   attr_accessor :idx_mention_read, :idx_mention_write
@@ -45,7 +47,6 @@ class ElasticSearchRasi
   def initialize(idx, opts = {})
     opts[:direct_idx] = false unless opts.include?(:direct_idx)
     @direct_idx       = opts[:direct_idx] || false
-
     $ES ||= {
       # example
       # -------
@@ -72,15 +73,6 @@ class ElasticSearchRasi
       # :logging => true,
       # :log_file => 'elasticsearch.log'
     }
-
-    if (opts[:logging] || $ES[:logging])
-      GLogg.ini(
-        opts[:log_file]  || $ES[:log_file]  || LOG_FILE,
-        opts[:log_level] || $ES[:log_level] || GLogg::L_INF
-      )
-    else
-      GLogg.ini(nil, GLogg::L_NIL)
-    end
     @url   = opts[:url] || $ES[:url] || 'http://127.0.0.1:9200'
 
     # direct set index(es)
