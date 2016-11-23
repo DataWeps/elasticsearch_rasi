@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'active_support/core_ext/hash'
+require 'active_support/core_ext/object/blank'
 
 require_relative 'request'
 require_relative 'query'
@@ -65,7 +66,7 @@ class ElasticsearchRasi
 
     # docs - [docs] or {id => doc}
     def save_docs(docs, method = :index, idx = @idx, type = 'document')
-      return true unless docs && !docs.empty? # nothing to save
+      return true if docs.blank?
       to_save =
         if docs.is_a?(Hash) # convert to array
           docs.stringify_keys!
@@ -91,7 +92,6 @@ class ElasticsearchRasi
         end
       end
       errors.compact!
-
       errors.empty? ? true : errors.flatten
     end # save_docs
 

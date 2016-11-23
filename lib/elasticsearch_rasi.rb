@@ -50,7 +50,7 @@ class ElasticsearchRasi
         opts = (ES[idx.to_sym] || opts)
         raise(ArgumentError, "Missing defined index '#{idx}'") if
           !opts || opts.empty?
-        {
+        ES[idx.to_sym].deep_symbolize_keys.merge({
           idx_node_read:           get_index(opts, :node, :read),
           idx_node_write:          get_index(opts, :node, :write),
           idx_mention_read:        get_index(opts, :mention, :read),
@@ -61,23 +61,31 @@ class ElasticsearchRasi
           mention_type:            opts[:mention_type] || 'document',
           node_alias:              opts[:node_alias],
           mention_alias:           opts[:mention_alias]
-        }.merge(connect: opts[:connect])
+        }).merge(connect: opts[:connect])
       end
-    @es = Elasticsearch::Client.new(@config[:connect])
+    @es = Elasticsearch::Client.new(@config[:connect].dup)
+    @es_another =
+      if @config.include?(:connect_another) && !@config[:connect_another].empty?
+        @config[:connect_another].map do |connect|
+          Elasticsearch::Client.new(connect.dup)
+        end
+      else
+        []
+      end
   end
 
   def mention
-    @mention ||= ElasticsearchRasi::Mention.new(@es, @config)
+    @mention ||= ElasticsearchRasi::Mention.new(@es, @config, @es_another)
     @mention
   end
 
   def node
-    @mention ||= ElasticsearchRasi::Node.new(@es, @config)
+    @mention ||= ElasticsearchRasi::Node.new(@es, @config, @es_another)
     @mention
   end
 
   def document
-    @document ||= ElasticsearchRasi::Document.new(@es, @config)
+    @document ||= ElasticsearchRasi::Document.new(@es, @config, @es_another)
     @document
   end
 

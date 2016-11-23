@@ -1,4 +1,6 @@
 # encoding:utf-8
+require 'active_support/core_ext/object/deep_dup'
+
 class ElasticsearchRasi
   module Request
     CONTENT_TYPE = { content_type: 'application/json' }
@@ -13,12 +15,21 @@ class ElasticsearchRasi
       response
     end
 
-    private
+  private
+
+    def another_es?(method)
+      !@es_another.empty? &&
+        !@config[:another_methods].blank? && @config[:another_methods].include?(method)
+    end
 
     def send_request(method, params)
       counter = 0
       begin
-        return @es.send(method, params)
+        clone_params = params.deep_dup if another_es?(method)
+        response = @es.send(method, params)
+        return response unless another_es?(method)
+        @es_another.each { |es| es.send(method.to_sym, clone_params) }
+        return response
       rescue Elasticsearch::Transport::Transport::Errors::InternalServerError => e
         return { error: e.message }
       rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e

@@ -1,5 +1,6 @@
 # encoding:utf-8
 require 'rspec'
+require 'pry'
 $LOAD_PATH.unshift(File.expand_path(File.join(__dir__, '..', 'lib')))
 require 'elasticsearch_rasi'
 ES = {
@@ -21,9 +22,11 @@ ES = {
     :mention_alias  => true,
     connect: {
       host: 'localhost:9200',
-      log:  true
-    }
+      log:  true },
+    connect_another: [
+      { host: 'localhost:9200', log: true } ],
+    another_methods: [:bulk, :update]
   },
   connect_sleep: 5,
-  connect_attempts: 2
+  connect_attempts: 2,
 }

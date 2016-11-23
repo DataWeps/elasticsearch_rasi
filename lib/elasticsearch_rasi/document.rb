@@ -9,9 +9,10 @@ class ElasticsearchRasi
     include Common
     include Scroll
 
-    def initialize(es, config)
+    def initialize(es, config, es_another = [])
       @config = config
       @es = es
+      @es_another = es_another
     end
 
     def get_document(
