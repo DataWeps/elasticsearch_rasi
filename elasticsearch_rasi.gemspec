@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
     'http://rubygems.org/gems/hola'
   s.license     = 'MIT'
 
-  s.add_dependency 'elasticsearch', '0.4'
+  s.add_dependency 'elasticsearch', '~> 0.4.11'
   s.add_dependency 'typhoeus', '~> 0.7'
   s.add_dependency 'oj', '~> 2.11'
   s.add_dependency 'activesupport', '~> 4.2', '>= 4.2.7'

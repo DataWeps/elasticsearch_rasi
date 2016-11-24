@@ -5,7 +5,8 @@ require 'oj'
 describe ElasticsearchRasi do
   context 'initialize from config' do
     before(:context) do
-      @es = ElasticsearchRasi.new(:disputatio)
+      @key = :forums
+      @es = ElasticsearchRasi.new(@key)
     end
 
     it 'check config' do
@@ -20,27 +21,27 @@ describe ElasticsearchRasi do
 
     it 'check node index' do
       expect(@es.config[:idx_node_write]).to eq(
-        "#{ES[:disputatio][:base]}#{ES[:disputatio][:node_suffix]}" \
-        "#{ES[:disputatio][:node_write]}")
+        "#{ES[@key][:base]}#{ES[@key][:node_suffix]}" \
+        "#{ES[@key][:node_write]}")
       expect(@es.config[:idx_node_read]).to eq(
-        "#{ES[:disputatio][:base]}#{ES[:disputatio][:node_suffix]}" \
-        "#{ES[:disputatio][:node_read]}")
+        "#{ES[@key][:base]}#{ES[@key][:node_suffix]}" \
+        "#{ES[@key][:node_read]}")
     end
 
     it 'check mention index' do
       expect(@es.config[:idx_mention_write]).to eq(
-        "#{ES[:disputatio][:base]}#{ES[:disputatio][:mention_suffix]}" \
-        "#{ES[:disputatio][:mention_write]}")
+        "#{ES[@key][:base]}#{ES[@key][:mention_suffix]}" \
+        "#{ES[@key][:mention_write]}")
       expect(@es.config[:idx_mention_read]).to eq(
-        "#{ES[:disputatio][:base]}#{ES[:disputatio][:mention_suffix]}" \
-        "#{ES[:disputatio][:node_read]}")
+        "#{ES[@key][:base]}#{ES[@key][:mention_suffix]}" \
+        "#{ES[@key][:node_read]}")
     end
 
     it 'check client index' do
       expect(@es.config[:idx_node_read_client]).to eq(
-        "#{ES[:disputatio][:node_client]}")
+        "#{ES[@key][:node_client]}")
       expect(@es.config[:idx_mention_read_client]).to eq(
-        "#{ES[:disputatio][:mention_client]}")
+        "#{ES[@key][:mention_client]}")
     end
   end
 end

@@ -27,6 +27,29 @@ ES = {
       { host: 'localhost:9200', log: true } ],
     another_methods: [:bulk, :update]
   },
+  forums:  {
+    base: 'forums',
+    node_suffix: '_topics',
+    mention_suffix: '_mentions',
+
+    node_read:  '',
+    node_write:  '',
+
+    mention_read:  '',
+    mention_write: '_current',
+
+    node_client:  '',
+    mention_client: 'forums',
+
+    node_alias:  false,
+    mention_alias:  true,
+    connect: {
+      host: 'localhost:9999',
+      log:  true }
+    # connect_another: [
+    #   { host: 'es1.weps.cz:9200', log: true } ],
+    # another_methods: [:bulk, :update, :index]
+  },
   connect_sleep: 5,
   connect_attempts: 2,
 }

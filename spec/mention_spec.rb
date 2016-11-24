@@ -6,7 +6,7 @@ require 'elasticsearch'
 describe ElasticsearchRasi do
   context 'initialize from config' do
     before(:context) do
-      @rasi_es = ElasticsearchRasi.new(:disputatio)
+      @rasi_es = ElasticsearchRasi.new(:forums)
       @es = Elasticsearch::Client.new(@rasi_es.config[:connect])
       @es.delete(
         index: @rasi_es.config[:idx_mention_write],

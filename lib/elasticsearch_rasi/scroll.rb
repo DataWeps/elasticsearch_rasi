@@ -30,6 +30,7 @@ class ElasticsearchRasi
     # return nil in case of error (any of the requests failed),
     # count of documents scrolled otherwise
     def scroll_each(scan, &block)
+      scan.delete(:total)
       count = 0
       loop do
         response = request(:scroll, scan)
