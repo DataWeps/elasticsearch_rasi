@@ -40,6 +40,7 @@ describe ElasticsearchRasi do
         query: { filtered: { filter: { term: { url: 'test' } } } }) do |d|
         ids << d['_id']
       end
+      @rasi_es.mention.scroll(query: { filtered: { filter: {} } }) {}
       expect(ids.size).to eql(@saves[:create].size)
     end
 

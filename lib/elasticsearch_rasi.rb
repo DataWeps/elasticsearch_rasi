@@ -80,8 +80,8 @@ class ElasticsearchRasi
   end
 
   def node
-    @mention ||= ElasticsearchRasi::Node.new(@es, @config, @es_another)
-    @mention
+    @node ||= ElasticsearchRasi::Node.new(@es, @config, @es_another)
+    @node
   end
 
   def document
