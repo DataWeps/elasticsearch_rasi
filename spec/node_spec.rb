@@ -32,7 +32,7 @@ describe ElasticsearchRasi do
     end
 
     it 'read node' do
-      expect(@rasi_es.node.get_document(1)).not_to eq({})
+      expect(@rasi_es.node.get_docs(1)).not_to eq({})
     end
 
     it 'read node ids' do

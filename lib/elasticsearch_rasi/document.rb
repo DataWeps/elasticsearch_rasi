@@ -15,7 +15,7 @@ class ElasticsearchRasi
       @es_another = es_another
     end
 
-    def get_document(
+    def get_docs(
       ids, idx = @config[:idx_read], type = @config[:type], source = true)
 
       if @config[:alias]
@@ -30,6 +30,7 @@ class ElasticsearchRasi
       get_doc(id, idx, type)
     end
 
+    # returns just ids
     def get_ids(ids, idx = @config[:idx_read], type = @config[:type])
       if @config[:alias]
         get_docs_by_filter(ids, idx, type, false)
