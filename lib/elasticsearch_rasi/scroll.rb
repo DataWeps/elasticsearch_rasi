@@ -1,7 +1,7 @@
 # encoding:utf-8
 class ElasticsearchRasi
   module Scroll
-    SCROLL = '1m'
+    SCROLL = '1m'.freeze
     def scan_search(query, idx, params, &block)
       scroll = scan(query, idx, params) || (return 0)
       scroll_each(scroll, &block)
@@ -20,8 +20,7 @@ class ElasticsearchRasi
       {
         scroll:    params['scroll'] || SCROLL,
         scroll_id: response['_scroll_id'],
-        total:     response['hits']['total'].to_i
-      }
+        total:     response['hits']['total'].to_i }
     end # scan
 
     # wrapper to scroll each document for the initialized scan

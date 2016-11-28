@@ -5,6 +5,7 @@ require 'elasticsearch_rasi/scroll'
 
 class ElasticsearchRasi
   class Document
+    attr_reader :config
     include Base
     include Common
     include Scroll
@@ -58,6 +59,10 @@ class ElasticsearchRasi
 
     def scroll(query, params = {}, idx = @config[:idx_read], &block)
       scan_search(query, idx, params, &block)
+    end
+
+    def scan_with_total(query, params = {}, idx = @config[:idx_read])
+      scan(query, idx, params)
     end
 
     def count(query, idx = @config[:idx_read], type = @config[:type])
