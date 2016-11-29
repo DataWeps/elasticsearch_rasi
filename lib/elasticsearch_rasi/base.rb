@@ -111,11 +111,11 @@ class ElasticsearchRasi
     # return nil in case of error, document count otherwise
     def query_count(query, idx, type = 'document')
       response = request(
-        :count,
+        :search,
         index: idx,
         type:  type,
         body:  query)
-      response['count'].to_i || 0
+      response['hits']['total'].to_i || 0
     end
   end
 end

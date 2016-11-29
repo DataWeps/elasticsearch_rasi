@@ -42,7 +42,7 @@ class ElasticsearchRasi
 
     def get_count_query(query)
       {
-        "size" => 1,
+        "size" => 0,
         "query" => {
           "filtered" => {
             "filter" => {
