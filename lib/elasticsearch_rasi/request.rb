@@ -35,9 +35,16 @@ class ElasticsearchRasi
         next if data.blank? || data[:data].blank?
         next if data[:data]['author'].blank?
 
+        author =
+          if data[:data]['author'].is_a?(Hash)
+            data[:data]['author']['name']
+          else
+            data[:data]['author']
+          end
+
         data[:data]['search_author'] = {
-          'name' => data[:data]['author'],
-          'author_hash' => compute_author_hash(data[:data]['author']) }
+          'name' => author,
+          'author_hash' => compute_author_hash(author) }
       end
     end
 
