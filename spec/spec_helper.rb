@@ -24,8 +24,9 @@ ES = {
       host: 'localhost:9200',
       log:  true },
     connect_another: [
-      { host: 'localhost:9200', log: true } ],
-    another_methods: [:bulk, :update]
+      { host: 'es.vboom.eu:9200', log: true } ],
+    another_methods: [:bulk, :update],
+    verboom_bulk: true
   },
   forums:  {
     base: 'forums',

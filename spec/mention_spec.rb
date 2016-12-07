@@ -6,7 +6,7 @@ require 'elasticsearch'
 describe ElasticsearchRasi do
   context 'initialize from config' do
     before(:context) do
-      @rasi_es = ElasticsearchRasi.new(:forums)
+      @rasi_es = ElasticsearchRasi.new(:disputatio)
       @es = Elasticsearch::Client.new(@rasi_es.config[:connect])
       @es.delete(
         index: @rasi_es.config[:idx_mention_write],
@@ -26,6 +26,7 @@ describe ElasticsearchRasi do
       expect(@rasi_es.mention.save_document(
         '_id'     => '1',
         'title'   => 'titulek',
+        'author'  => 'pokus',
         'content' => 'titulek obsah')).to eq(true)
       @es.indices.refresh(
         index: @rasi_es.config[:idx_mention_write])
