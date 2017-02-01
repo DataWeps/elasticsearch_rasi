@@ -47,10 +47,10 @@ class ElasticsearchRasi
         # main node index (fb_page, topic, article etc ...)
         ES && ES.include?(idx.to_sym) ? ES[idx.to_sym] : opts
       else
-        opts = (ES[idx.to_sym] || opts)
+        opts = (ES[idx.to_sym] || {}).merge(opts)
         raise(ArgumentError, "Missing defined index '#{idx}'") if
           !opts || opts.empty?
-        ES[idx.to_sym].deep_symbolize_keys.merge({
+        ES[idx.to_sym].deep_symbolize_keys.merge(
           idx_node_read:           get_index(opts, :node, :read),
           idx_node_write:          get_index(opts, :node, :write),
           idx_mention_read:        get_index(opts, :mention, :read),
@@ -60,8 +60,7 @@ class ElasticsearchRasi
           node_type:               opts[:node_type] || 'document',
           mention_type:            opts[:mention_type] || 'document',
           node_alias:              opts[:node_alias],
-          mention_alias:           opts[:mention_alias]
-        }).merge(connect: opts[:connect])
+          mention_alias:           opts[:mention_alias]).merge(connect: opts[:connect])
       end
     @es = Elasticsearch::Client.new(@config[:connect].dup)
     @es_another =
