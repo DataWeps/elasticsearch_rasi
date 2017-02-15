@@ -12,7 +12,7 @@ class ElasticsearchRasi
 
     # translate results from ES to {id => doc}
     def parse_response(response, docs = {})
-      response['hits']['hits'].each { |doc| docs[doc['_id']] = doc['_source'] }
+      response['hits']['hits'].each_with_object(docs) { |doc, mem| mem[doc['_id']] = doc['_source'] }
     end
 
     def create_bulk(slice, idx, method = :index, type = 'document')

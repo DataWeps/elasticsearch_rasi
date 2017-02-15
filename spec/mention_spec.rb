@@ -4,6 +4,21 @@ require 'oj'
 require 'elasticsearch'
 
 describe ElasticsearchRasi do
+  context 'search' do
+    let(:es) do
+      ElasticsearchRasi.new(:disputatio)
+    end
+
+    let(:result) do
+      es.mention.search(
+        Oj.load(%({"size": 1, "query": { "filtered": { "filter": {}}}})))
+    end
+
+    it 'should has search' do
+      expect(result.size).not_to be(0)
+    end
+  end
+
   context 'initialize from config' do
     before(:context) do
       @rasi_es = ElasticsearchRasi.new(:disputatio)

@@ -23,8 +23,8 @@ ES = {
     connect: {
       host: 'localhost:9200',
       log:  true },
-    connect_another: [
-      { host: 'es.vboom.eu:9200', log: true } ],
+    # connect_another: [
+    #   { host: 'localhost:9997', log: true } ],
     another_methods: [:bulk, :update],
     verboom_bulk: true
   },
@@ -45,7 +45,7 @@ ES = {
     node_alias:  false,
     mention_alias:  true,
     connect: {
-      host: 'localhost:9999',
+      host: 'localhost:9200',
       log:  true }
     # connect_another: [
     #   { host: 'es1.weps.cz:9200', log: true } ],

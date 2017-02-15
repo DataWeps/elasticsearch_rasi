@@ -97,7 +97,7 @@ class ElasticsearchRasi
 
     # query - hash of the query to be done
     # return nil in case of error, rsp['hits'] otherwise
-    def search(query, idx, type = 'document')
+    def query_search(query, idx, type = 'document')
       response = request(
         :search,
         index: idx,

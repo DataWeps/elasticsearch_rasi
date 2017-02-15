@@ -72,5 +72,9 @@ class ElasticsearchRasi
     def refresh(idx = @config[:idx_read])
       @es.indices.refresh(index: idx)
     end
+
+    def search(query, idx = @config[:idx_read], type = @config[:type])
+      query_search(query, idx, type)
+    end
   end
 end
