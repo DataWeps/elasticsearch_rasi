@@ -4,6 +4,7 @@ class ElasticsearchRasi
   class Node < Document
     def initialize(es, config, es_another)
       super(es, config.merge(
+        file:      config[:node_file],
         idx_read:  config[:idx_node_read],
         idx_write: config[:idx_node_write],
         alias:     config[:node_alias],

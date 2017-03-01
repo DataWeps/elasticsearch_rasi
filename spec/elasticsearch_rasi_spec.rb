@@ -43,5 +43,15 @@ describe ElasticsearchRasi do
       expect(@es.config[:idx_mention_read_client]).to eq(
         "#{ES[@key][:mention_client]}")
     end
+
+    context 'file' do
+      it 'should has file config for node' do
+        expect(@es.node.config[:file]).to eq('node')
+      end
+
+      it 'should has file config for mention' do
+        expect(@es.mention.config[:file]).to eq('mention')
+      end
+    end
   end
 end

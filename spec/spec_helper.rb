@@ -8,6 +8,10 @@ ES = {
     :base           => 'disputatio',
     :node_suffix    => '_articles',
     :mention_suffix => '_mentions',
+    file: {
+      node: 'node',
+      mention: 'mention'
+    },
 
     :node_read      => '',
     :node_write     => '_current',
@@ -32,7 +36,10 @@ ES = {
     base: 'forums',
     node_suffix: '_topics',
     mention_suffix: '_mentions',
-
+    file: {
+      node: 'node',
+      mention: 'mention'
+    },
     node_read:  '',
     node_write:  '',
 
