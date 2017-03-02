@@ -1,8 +1,11 @@
 # encoding:utf-8
+require 'active_support/core_ext/hash'
+
 class ElasticsearchRasi
   module Scroll
     SCROLL = '1m'.freeze
     def scan_search(query, idx, params, &block)
+      params.symbolize_keys!
       scroll = scan(query, idx, params) || (return 0)
       scroll_each(scroll, &block)
     end
@@ -18,7 +21,8 @@ class ElasticsearchRasi
           index: idx, scroll: SCROLL, body: query, search_type: 'scan'
         }.merge(params)) || (return false)
       {
-        scroll:    params['scroll'] || SCROLL,
+        'hits'     => { 'hits' => response['hits']['hits'] },
+        scroll:    params[:scroll] || SCROLL,
         scroll_id: response['_scroll_id'],
         total:     response['hits']['total'].to_i }
     end # scan
@@ -30,16 +34,17 @@ class ElasticsearchRasi
     # count of documents scrolled otherwise
     def scroll_each(scan, &block)
       scan.delete(:total)
+      response = { 'hits' => scan.delete('hits') }
       count = 0
       loop do
-        response = request(:scroll, scan)
-        break unless response
-        scan[:scroll_id] = response['_scroll_id']
-        break if !response || response['hits']['hits'].empty?
         response['hits']['hits'].each do |document|
           block.call(document)
           count += 1
         end
+        response = request(:scroll, scan)
+        break unless response
+        scan[:scroll_id] = response['_scroll_id']
+        break if !response || response['hits']['hits'].empty?
       end
       count
     end # scroll_each

@@ -26,9 +26,9 @@ ES = {
     :mention_alias  => true,
     connect: {
       host: 'localhost:9200',
-      log:  true },
+      log: false },
     # connect_another: [
-    #   { host: 'localhost:9997', log: true } ],
+    #   { host: 'localhost:9997', log: false } ],
     another_methods: [:bulk, :update],
     verboom_bulk: true
   },
@@ -53,7 +53,7 @@ ES = {
     mention_alias:  true,
     connect: {
       host: 'localhost:9200',
-      log:  true }
+      log: false }
     # connect_another: [
     #   { host: 'es1.weps.cz:9200', log: true } ],
     # another_methods: [:bulk, :update, :index]

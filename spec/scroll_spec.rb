@@ -37,10 +37,10 @@ describe ElasticsearchRasi do
     it 'read scroll total' do
       ids = []
       @rasi_es.node.scroll(
-        query: { filtered: { filter: { term: { url: 'test' } } } }) do |d|
+        { query: { filtered: { filter: { term: { url: 'test' } } } } }, { scroll: '5m' }) do |d|
         ids << d['_id']
       end
-      @rasi_es.mention.scroll(query: { filtered: { filter: {} } }) {}
+      @rasi_es.mention.scroll( { query: { filtered: { filter: {} } } }, { scroll: '5m' }) {}
       expect(ids.size).to eql(@saves[:create].size)
     end
 
