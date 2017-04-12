@@ -3,6 +3,7 @@ require 'oj'
 require 'elasticsearch'
 require 'typhoeus'
 require 'typhoeus/adapters/faraday'
+require 'active_support/core_ext/hash/deep_merge'
 
 # helper methods
 require 'elasticsearch_rasi/util'
@@ -47,7 +48,7 @@ class ElasticsearchRasi
         # main node index (fb_page, topic, article etc ...)
         ES && ES.include?(idx.to_sym) ? ES[idx.to_sym] : opts
       else
-        opts = (ES[idx.to_sym] || {}).merge(opts)
+        opts = (ES[idx.to_sym] || {}).deep_merge(opts)
         raise(ArgumentError, "Missing defined index '#{idx}'") if
           !opts || opts.empty?
         ES[idx.to_sym].deep_symbolize_keys.merge(

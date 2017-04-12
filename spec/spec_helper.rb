@@ -52,7 +52,7 @@ ES = {
     node_alias:  false,
     mention_alias:  true,
     connect: {
-      host: 'localhost:9200',
+      host: 'localhost:9203',
       log: false }
     # connect_another: [
     #   { host: 'es1.weps.cz:9200', log: true } ],

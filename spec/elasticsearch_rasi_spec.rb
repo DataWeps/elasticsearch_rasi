@@ -6,11 +6,15 @@ describe ElasticsearchRasi do
   context 'initialize from config' do
     before(:context) do
       @key = :forums
-      @es = ElasticsearchRasi.new(@key)
+      @es = ElasticsearchRasi.new(@key, connect: { logger: false })
     end
 
     it 'check config' do
       expect(@es.config.size).not_to eq(0)
+    end
+
+    it 'should has connect to right url' do
+      expect(@es.config[:connect][:host]).to eq('localhost:9203')
     end
 
     it 'check nil config' do
