@@ -69,7 +69,9 @@ class ElasticsearchRasi
     @es_another =
       if @config.include?(:connect_another) && !@config[:connect_another].empty?
         @config[:connect_another].map do |connect|
-          Elasticsearch::Client.new(connect.dup)
+          {
+            es: Elasticsearch::Client.new(connect[:connect].dup),
+            config: connect }
         end
       else
         []

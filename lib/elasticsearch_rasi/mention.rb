@@ -3,6 +3,7 @@ require_relative 'document'
 class ElasticsearchRasi
   class Mention < Document
     def initialize(es, config, es_another)
+      @rasi_type = :mention
       super(es,
         config.merge(
           file:      config[:mention_file],

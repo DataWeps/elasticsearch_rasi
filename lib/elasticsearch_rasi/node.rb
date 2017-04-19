@@ -3,6 +3,7 @@ require_relative 'document'
 class ElasticsearchRasi
   class Node < Document
     def initialize(es, config, es_another)
+      @rasi_type = :node
       super(es, config.merge(
         file:      config[:node_file],
         idx_read:  config[:idx_node_read],

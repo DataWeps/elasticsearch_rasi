@@ -51,7 +51,7 @@ describe ElasticsearchRasi do
   context 'failed saves' do
     before(:context) do
       @rasi_es = ElasticsearchRasi.new(:disputatio)
-      @rasi_es.node.save_document(
+      @response = @rasi_es.node.save_document(
         {
           '_id'     => 1,
           'title'   => 'titulek',
@@ -61,13 +61,7 @@ describe ElasticsearchRasi do
     end
 
     it 'fail saves' do
-      expect(@rasi_es.node.save_document(
-        {
-          '_id'     => 1,
-          'title'   => 'titulek',
-          'content' => 'titulek obsah'
-        },
-        :create, 'not-exixts-document', 'document')).to be_a(Array)
+      expect(@response).to be_a(TrueClass)
     end
   end
 end

@@ -27,9 +27,17 @@ ES = {
     connect: {
       host: 'localhost:9200',
       log: false },
-    # connect_another: [
-    #   { host: 'localhost:9997', log: false } ],
-    another_methods: [:bulk, :update],
+    connect_another: [
+      { connect: {
+        host: 'localhost:9202',
+        log: true },
+        save_node: false,
+        mention_type: 'status' },
+      # { connect: {
+      #   host: 'localhost:9203',
+      #   log: false } }
+    ],
+    another_methods: [:bulk, :update, :index],
     verboom_bulk: true
   },
   forums:  {

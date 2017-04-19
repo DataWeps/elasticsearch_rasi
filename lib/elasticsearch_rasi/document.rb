@@ -5,7 +5,7 @@ require 'elasticsearch_rasi/scroll'
 
 class ElasticsearchRasi
   class Document
-    attr_reader :config
+    attr_reader :config, :rasi_type
     include Base
     include Common
     include Scroll
