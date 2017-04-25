@@ -32,14 +32,26 @@ class ElasticsearchRasi
       config.include?("#{@rasi_type}_type".to_sym)
     end
 
+    def change_index?(config)
+      config.include?("#{@rasi_type}_index".to_sym)
+    end
+
     def prepare_params!(config, params)
       return true if @config[:verboom_bulk].blank?
       params[:type] = config["#{@rasi_type}_type".to_sym] if
         params.include?(:type) && change_type?(config)
+
+      params[:index] = config["#{@rasi_type}_index".to_sym] if
+        params.include?(:index) && change_index?(config)
+
       params[:body].each do |in_data|
         data = in_data.values[0]
         data[:_type] = config["#{@rasi_type}_type".to_sym] if
           data.include?(:_type) && change_type?(config)
+
+        data[:_index] = config["#{@rasi_type}_index".to_sym] if
+          data.include?(:_index) && change_index?(config)
+
         next if data.blank? || data[:data].blank?
         next if data[:data]['author'].blank?
 
