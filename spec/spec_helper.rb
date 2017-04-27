@@ -29,10 +29,10 @@ ES = {
       log: false },
     connect_another: [
       { connect: {
-        host: 'localhost:9202',
-        log: true },
-        save_node: false,
-        mention_type: 'status' },
+          host: 'localhost:9202',
+          log: true },
+        mention_write_date_base: 'disputatio_mentions',
+        mention_write_date: true },
       # { connect: {
       #   host: 'localhost:9203',
       #   log: false } }

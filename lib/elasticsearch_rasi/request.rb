@@ -33,24 +33,35 @@ class ElasticsearchRasi
     end
 
     def change_index?(config)
-      config.include?("#{@rasi_type}_index".to_sym)
+      config.include?("#{@rasi_type}_index".to_sym) ||
+        config["#{@rasi_type}_write_date".to_sym]
+    end
+
+    def change_index(key, config, params)
+      return params[key] if
+        params.include?(key) && !change_index?(config)
+      if config.include?("#{@rasi_type}_index".to_sym)
+        config["#{@rasi_type}_index".to_sym]
+      elsif config.include?("#{@rasi_type}_write_date".to_sym)
+        "#{config["#{@rasi_type}_write_date_base".to_sym]}_#{Time.now.strftime('%Y%m')}"
+      else
+        params[key]
+      end
     end
 
     def prepare_params!(config, params)
       return true if @config[:verboom_bulk].blank?
-      params[:type] = config["#{@rasi_type}_type".to_sym] if
-        params.include?(:type) && change_type?(config)
+      # params[:type] = config["#{@rasi_type}_type".to_sym] if
+      #   params.include?(:type) && change_type?(config)
 
-      params[:index] = config["#{@rasi_type}_index".to_sym] if
-        params.include?(:index) && change_index?(config)
+      # params[:index] = change_index(:index, config, params)
 
       params[:body].each do |in_data|
         data = in_data.values[0]
         data[:_type] = config["#{@rasi_type}_type".to_sym] if
           data.include?(:_type) && change_type?(config)
 
-        data[:_index] = config["#{@rasi_type}_index".to_sym] if
-          data.include?(:_index) && change_index?(config)
+        data[:_index] = change_index(:_index, config, data)
 
         next if data.blank? || data[:data].blank?
         next if data[:data]['author'].blank?
