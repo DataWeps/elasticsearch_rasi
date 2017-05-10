@@ -51,7 +51,7 @@ class ElasticsearchRasi
         opts = (ES[idx.to_sym] || {}).deep_merge(opts)
         raise(ArgumentError, "Missing defined index '#{idx}'") if
           !opts || opts.empty?
-        ES[idx.to_sym].deep_symbolize_keys.merge(
+        opts.deep_symbolize_keys.merge(
           node_file:               opts[:file] ? opts[:file][:node] : nil,
           mention_file:            opts[:file] ? opts[:file][:mention] : nil,
           idx_node_read:           get_index(opts, :node, :read),

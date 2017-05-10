@@ -24,19 +24,14 @@ ES = {
 
     :node_alias     => true,
     :mention_alias  => true,
+
     connect: {
       host: 'localhost:9200',
       log: false },
-    connect_another: [
-      { connect: {
-          host: 'localhost:9202',
-          log: true },
-        mention_write_date_base: 'disputatio_mentions',
-        mention_write_date: true },
       # { connect: {
       #   host: 'localhost:9203',
       #   log: false } }
-    ],
+    # ],
     another_methods: [:bulk, :update, :index],
     verboom_bulk: true
   },

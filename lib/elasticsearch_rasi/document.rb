@@ -3,15 +3,25 @@ require 'elasticsearch_rasi/base'
 require 'elasticsearch_rasi/common'
 require 'elasticsearch_rasi/scroll'
 
+require 'active_support/core_ext/time/calculations'
+
 class ElasticsearchRasi
   class Document
-    attr_reader :config, :rasi_type
+    attr_reader :config, :rasi_type, :write_date, :max_age
     include Base
     include Common
     include Scroll
 
     def initialize(es, config, es_another = [])
-      @config = config
+      @config     = config
+      @max_age    = nil
+      @write_date =
+        if @config["#{@rasi_type}_write_date".to_sym].present?
+          @max_age = Time.now.months_ago(@config[:max_age]).beginning_of_month
+          true
+        else
+          false
+        end
       @es = es
       @es_another = es_another
     end

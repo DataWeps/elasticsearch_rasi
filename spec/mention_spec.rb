@@ -69,7 +69,6 @@ describe ElasticsearchRasi do
 
     it 'delete mention' do
       response = @rasi_es.mention.save_document({ '_id' => 1 }, :delete)
-      p response
       expect(response).to be(true)
     end
 
@@ -84,6 +83,24 @@ describe ElasticsearchRasi do
         id:    '2',
         type:  @rasi_es.config[:mention_type],
         ignore: 404)
+    end
+  end
+
+  context 'save to specific date' do
+    before :context do
+      ES[:disputatio][:mention_write_date] = true
+      ES[:disputatio][:max_age] = 6
+      @es = ElasticsearchRasi.new(:disputatio)
+    end
+
+    context 'save node' do
+      before :context do
+        @bulk = @es.mention.create_bulk([{'_id' => 'test', 'published_at' => '2017-01-05'}], @es.mention.config[:idx_write])
+      end
+
+      it 'should has date in 201701' do
+        expect(@bulk[0][:index][:_index]).to match(/201705/)
+      end
     end
   end
 end
