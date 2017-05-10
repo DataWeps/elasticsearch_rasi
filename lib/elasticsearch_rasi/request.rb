@@ -5,7 +5,9 @@ require 'digest/sha1'
 
 class ElasticsearchRasi
   module Request
-    CONTENT_TYPE = { content_type: 'application/json' }
+    CONTENT_TYPE     = { content_type: 'application/json' }.freeze
+    CONNECT_ATTEMPTS = 5
+    CONNECT_SLEEP    = 0.1
 
     def request(method, params)
       send_request(method, params)
@@ -94,13 +96,13 @@ class ElasticsearchRasi
         end
         response
       rescue Elasticsearch::Transport::Transport::Errors::InternalServerError => e
-        { error: e.message }
+        { 'errors' => e.message }
       rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e
-        { error: e.message }
+        { 'errors' => e.message }
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
         counter += 1
-        return { error: e.message } if counter > ES[:connect_attempts]
-        sleep(ES[:connect_sleep])
+        return { 'errors' => e.message } if counter > @config[:connect_attempts] || CONNECT_ATTEMPTS
+        sleep(@config[:connect_sleep] || CONNECT_SLEEP)
         retry
       end
     end

@@ -42,7 +42,7 @@ describe ElasticsearchRasi do
         '_id'     => '1',
         'title'   => 'titulek',
         'author'  => 'pokus',
-        'content' => 'titulek obsah')).to eq(true)
+        'content' => 'titulek obsah')[:ok]).to eq(true)
       @es.indices.refresh(
         index: @rasi_es.config[:idx_mention_write])
     end
@@ -56,11 +56,26 @@ describe ElasticsearchRasi do
         {
           '_id'     => 2,
           'title'   => 'titulek',
-          'content' => 'titulek obsah' }])).to eq(true)
+          'content' => 'titulek obsah' }])[:ok]).to eq(true)
     end
 
-    it 'read mention' do
-      expect(@rasi_es.mention.get(1)).not_to eq({})
+    context :error_mentions do
+      let(:response) do
+        @rasi_es.mention.save_document([
+          {
+            '_id'     => 1,
+            'title'   => 'titulek',
+            'cc'   => 'error',
+            'content' => 'titulek obsah' },
+          {
+            '_id'     => 2,
+            'title'   => 'titulek',
+            'content' => 'titulek obsah' }])
+      end
+
+      it 'read mention' do
+        expect(response[:ok]).not_to be(true)
+      end
     end
 
     it 'exists mention' do
@@ -69,20 +84,20 @@ describe ElasticsearchRasi do
 
     it 'delete mention' do
       response = @rasi_es.mention.save_document({ '_id' => 1 }, :delete)
-      expect(response).to be(true)
+      expect(response[:ok]).to be(true)
     end
 
     after(:context) do
-      @es.delete(
-        index: @rasi_es.config[:idx_mention_write],
-        id:    '1',
-        type:  @rasi_es.config[:mention_type],
-        ignore: 404)
-      @es.delete(
-        index: @rasi_es.config[:idx_mention_write],
-        id:    '2',
-        type:  @rasi_es.config[:mention_type],
-        ignore: 404)
+      # @es.delete(
+      #   index: @rasi_es.config[:idx_mention_write],
+      #   id:    '1',
+      #   type:  @rasi_es.config[:mention_type],
+      #   ignore: 404)
+      # @es.delete(
+      #   index: @rasi_es.config[:idx_mention_write],
+      #   id:    '2',
+      #   type:  @rasi_es.config[:mention_type],
+      #   ignore: 404)
     end
   end
 

@@ -85,14 +85,21 @@ class ElasticsearchRasi
       errors = []
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
         response = request(:bulk, body: create_bulk(slice, idx, method, type))
-        next unless response['errors']
-        errors << response['items'].map do |item|
-          next unless item[item.keys[0]].include?('error')
-          item[item.keys[0]]
-        end
+        next if response['errors'].blank?
+        errors <<
+          if response['items'].blank?
+            response['errors']
+          else
+            # typical es error
+            (response['items'] || []).map do |item|
+              next unless item[item.keys[0]].include?('error')
+              item[item.keys[0]]
+            end.compact
+          end
       end
-      errors.compact!
-      errors.empty? ? true : errors.flatten
+      {
+        ok: errors.empty? ? true : false,
+        errors: errors }
     end # save_docs
 
     # query - hash of the query to be done

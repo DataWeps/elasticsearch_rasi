@@ -17,7 +17,7 @@ class ElasticsearchRasi
       @max_age    = nil
       @write_date =
         if @config["#{@rasi_type}_write_date".to_sym].present?
-          @max_age = Time.now.months_ago(@config[:max_age]).beginning_of_month
+          @max_age = Time.now.months_ago(@config[:max_age]).beginning_of_month.to_i
           true
         else
           false

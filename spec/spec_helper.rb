@@ -27,7 +27,7 @@ ES = {
 
     connect: {
       host: 'localhost:9200',
-      log: false },
+      log: true },
       # { connect: {
       #   host: 'localhost:9203',
       #   log: false } }
