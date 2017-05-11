@@ -2,6 +2,7 @@ require 'spec_helper'
 $LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
 require 'oj'
 require 'elasticsearch'
+require 'active_support/core_ext/time/calculations'
 
 describe ElasticsearchRasi do
   context 'search' do
@@ -104,7 +105,7 @@ describe ElasticsearchRasi do
   context 'save to specific date' do
     before :context do
       ES[:disputatio][:mention_write_date] = true
-      ES[:disputatio][:max_age] = 6
+      ES[:disputatio][:mention_max_age] = 6
       @es = ElasticsearchRasi.new(:disputatio)
     end
 
@@ -115,6 +116,33 @@ describe ElasticsearchRasi do
 
       it 'should has date in 201701' do
         expect(@bulk[0][:index][:_index]).to match(/201705/)
+      end
+    end
+  end
+
+  context :prepare_index do
+    context :skip_too_old_mentions do
+      before :context do
+        ES[:disputatio][:mention_write_date] = true
+        ES[:disputatio][:mention_max_age] = 6
+        @es = ElasticsearchRasi.new(:disputatio)
+      end
+
+      let(:data) do
+        [{
+          '_id'          => 'too_old',
+          'published_at' => Time.now.months_ago(7).beginning_of_month.to_s },
+         {
+           '_id'          => 'just enough',
+           'published_at' => Time.now.months_ago(6).beginning_of_month.to_s }]
+      end
+
+      let(:bulk) do
+        @es.mention.create_bulk(data, @es.mention.config[:idx_write])
+      end
+
+      it 'should has just one bulk' do
+        expect(bulk.size).to be(1)
       end
     end
   end
