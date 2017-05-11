@@ -21,7 +21,7 @@ class ElasticsearchRasi
         slice_params = params.merge(
           body: { ids: slice }
         )
-        slice_params[:fields] = [] unless source
+        slice_params[:_source] = [] unless source
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
           next if !doc['exists'] && !doc['found']
@@ -44,7 +44,7 @@ class ElasticsearchRasi
         slice_params = params.merge(body: get_docs_query(
           { ids: { type: type, values: slice } },
           slice.size))
-        slice_params[:fields] = [] unless source
+        slice_params[:_source] = [] unless source
         response = request(:search, slice_params) || (return nil)
         parse_response(response, docs)
       end

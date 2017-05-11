@@ -6,7 +6,7 @@ class ElasticsearchRasi
       {
         "size"  => size,
         "query" => {
-          "filtered" => {
+          "bool" => {
             "filter" => query,
             "_cache" => false
           }
@@ -19,7 +19,7 @@ class ElasticsearchRasi
         "size"   => size,
         "fields" => [],
         "query" => {
-          "filtered" => {
+          "bool" => {
             "filter" => query,
             "_cache" => false
           }
@@ -30,7 +30,7 @@ class ElasticsearchRasi
     def get_bool_query(query)
       {
         "query" => {
-          "filtered" => {
+          "bool" => {
             "filter" => {
               "bool" => query
             },
@@ -44,7 +44,7 @@ class ElasticsearchRasi
       {
         "size" => 0,
         "query" => {
-          "filtered" => {
+          "bool" => {
             "filter" => {
               "bool" => query
             },

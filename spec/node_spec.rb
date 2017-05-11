@@ -26,7 +26,7 @@ describe ElasticsearchRasi do
       expect(@rasi_es.node.save_document(
         '_id'     => 1,
         'title'   => 'titulek',
-        'content' => 'titulek obsah')).to eq(true)
+        'content' => 'titulek obsah')[:ok]).to eq(true)
       @es.indices.refresh(
         index: @rasi_es.config[:idx_node_write])
     end
@@ -36,15 +36,16 @@ describe ElasticsearchRasi do
     end
 
     it 'read node ids' do
-      expect(@rasi_es.node.get_ids([1])[0]).to eq("1")
+      ids = @rasi_es.node.get_ids([1])
+      expect(ids[0]).to eq("1")
     end
 
     after(:context) do
-      @es.delete(
-        index: @rasi_es.config[:idx_node_write],
-        id:    '1',
-        type:  @rasi_es.config[:node_type],
-        ignore: 404)
+      # @es.delete(
+      #   index: @rasi_es.config[:idx_node_write],
+      #   id:    '1',
+      #   type:  @rasi_es.config[:node_type],
+      #   ignore: 404)
     end
   end
 

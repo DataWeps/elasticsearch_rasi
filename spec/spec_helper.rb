@@ -26,7 +26,7 @@ ES = {
     :mention_alias  => true,
 
     connect: {
-      host: 'localhost:9200',
+      host: 'localhost:9204',
       log: true },
       # { connect: {
       #   host: 'localhost:9203',

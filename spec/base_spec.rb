@@ -7,7 +7,7 @@ describe ElasticsearchRasi do
   def test_count
     @rasi_es.mention.count(
       query: {
-        filtered: {
+        bool: {
           filter: {
             term: {
               resource: 'zpravy.idnes'
