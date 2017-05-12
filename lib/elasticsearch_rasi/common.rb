@@ -20,7 +20,7 @@ class ElasticsearchRasi
       parsed_published_at = Time.parse(doc['published_at'])
       return nil if parsed_published_at.to_i < @max_age ||
                     parsed_published_at.to_i > (Time.now.to_i + (3 * 3600))
-      "#{index}_#{parsed_published_at.strftime('%Y%d')}"
+      "#{index}_#{parsed_published_at.strftime('%Y%m')}"
     end
 
     def create_bulk(slice, idx, method = :index, type = 'document')
