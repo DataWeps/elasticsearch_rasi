@@ -39,7 +39,11 @@ class ElasticsearchRasi
 
     # return one document['_source'] by its id
     def get(id, idx = @config[:idx_read], type = @config[:type])
-      get_doc(id, idx, type)
+      if @config[:alias]
+        get_docs_by_filter([id], idx, type, true)[id] || {}
+      else
+        get_doc(id, idx, type)
+      end
     end
 
     # returns just ids
