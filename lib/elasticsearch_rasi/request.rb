@@ -23,7 +23,7 @@ class ElasticsearchRasi
 
     def another_es?(method)
       !@es_another.empty? &&
-        !@config[:another_methods].blank? && @config[:another_methods].include?(method)
+        !@config[:another_methods].blank? && @config[:another_methods].include?(method.to_sym)
     end
 
     def compute_author_hash(author)
@@ -52,12 +52,6 @@ class ElasticsearchRasi
     end
 
     def prepare_params!(config, params)
-      return true if @config[:verboom_bulk].blank?
-      # params[:type] = config["#{@rasi_type}_type".to_sym] if
-      #   params.include?(:type) && change_type?(config)
-
-      # params[:index] = change_index(:index, config, params)
-
       params[:body].each do |in_data|
         data = in_data.values[0]
         data[:_type] = config["#{@rasi_type}_type".to_sym] if
@@ -65,6 +59,7 @@ class ElasticsearchRasi
 
         data[:_index] = change_index(:_index, config, data)
 
+        next if @config[:verboom_bulk].blank?
         next if data.blank? || data[:data].blank?
         next if data[:data]['author'].blank?
 
@@ -82,11 +77,12 @@ class ElasticsearchRasi
     end
 
     def send_request(method, params)
+      method = method.to_sym
       counter = 0
       begin
         response = @es.send(method, params)
         return response if
-          !another_es?(method) || ![:bulk, :index, :update].include?(method.to_sym)
+          !another_es?(method) || ![:bulk, :index, :update].include?(method)
         @es_another.each do |es|
           next if es[:config].include?("save_#{@rasi_type}".to_sym) &&
                   es[:config]["save_#{@rasi_type}".to_sym] == false
@@ -99,9 +95,11 @@ class ElasticsearchRasi
         { 'errors' => e.message }
       rescue Elasticsearch::Transport::Transport::Errors::BadRequest => e
         { 'errors' => e.message }
-      rescue Faraday::ConnectionFailed, Faraday::TimeoutError => e
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
+             Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
         counter += 1
-        return { 'errors' => e.message } if counter > @config[:connect_attempts] || CONNECT_ATTEMPTS
+        return { 'errors' => e.message } if counter >
+          (@config[:connect_attempts] || CONNECT_ATTEMPTS)
         sleep(@config[:connect_sleep] || CONNECT_SLEEP)
         retry
       end

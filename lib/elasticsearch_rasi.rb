@@ -27,6 +27,7 @@ class ElasticsearchRasi
   Oj.default_options = { mode: :compat }
   SLICES     = 250
   BULK_STORE = 500
+  DEFAULT_ANOTHER_METHODS = [:index, :update, :bulk]
   LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
   attr_accessor :config
@@ -76,6 +77,9 @@ class ElasticsearchRasi
       else
         []
       end
+    @config[:another_methods] = (
+      @config[:another_methods] || DEFAULT_ANOTHER_METHODS).map(&:to_sym) unless
+        @es_another.blank?
   end
 
   def mention
