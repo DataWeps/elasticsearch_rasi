@@ -26,9 +26,9 @@ class ElasticsearchRasi
 
   Oj.default_options = { mode: :compat }
   SLICES     = 250
-  BULK_STORE = 500
-  DEFAULT_ANOTHER_METHODS = [:index, :update, :bulk]
-  LOG_FILE   = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
+  BULK_STORE = 250
+  DEFAULT_ANOTHER_METHODS = [:index, :update, :bulk].freeze
+  LOG_FILE = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
   attr_accessor :config
 
@@ -112,11 +112,4 @@ private
       "#{index}#{opts[:"#{type}_#{access}"]}#{write}"
     end
   end
-
-  # query - direct GET query through URL
-  # return nil in case of error, documents (unprepared) otherwise
-  # def direct_query(idx, query, what = '_search')
-  #   url = "#{idx}/#{what}?#{query}"
-  #   request_elastic :get, url
-  # end # direct_query
 end
