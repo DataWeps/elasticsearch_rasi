@@ -84,7 +84,10 @@ class ElasticsearchRasi
       raise "Incorrect docs supplied (#{docs.class})" unless to_save.is_a?(Array)
       errors = []
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
-        response = request(:bulk, body: create_bulk(slice, idx, method, type))
+        bulk = create_bulk(slice, idx, method, type)
+        next if bulk.blank?
+
+        response = request(:bulk, body: bulk)
         next if response['errors'].blank?
         errors <<
           if response['items'].blank?

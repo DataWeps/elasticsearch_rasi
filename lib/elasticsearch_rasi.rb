@@ -13,7 +13,6 @@ require 'elasticsearch_rasi/common'
 
 # alias query methods
 require 'elasticsearch_rasi/scroll'
-require 'elasticsearch_rasi/rotation'
 require 'elasticsearch_rasi/mention'
 require 'elasticsearch_rasi/node'
 
@@ -21,7 +20,6 @@ class ElasticsearchRasi
   include Query
   include Request
   include Scroll
-  include Rotation
   include Common
 
   Oj.default_options = { mode: :compat }
@@ -66,9 +64,13 @@ class ElasticsearchRasi
           node_alias:              opts[:node_alias],
           mention_alias:           opts[:mention_alias]).merge(connect: opts[:connect])
       end
+
+    @config[:connect][:retry_on_failure] ||= true if
+     (@config[:connect][:host] || @config[:connect][:hosts] || []).size > 1
+
     @es = Elasticsearch::Client.new(@config[:connect].dup)
     @es_another =
-      if @config.include?(:connect_another) && !@config[:connect_another].empty?
+      if @config.include?(:connect_another) && !@config[:connect_another].blank?
         @config[:connect_another].map do |connect|
           {
             es: Elasticsearch::Client.new(connect[:connect].dup),
