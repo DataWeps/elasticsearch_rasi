@@ -6,7 +6,7 @@ require 'elasticsearch'
 describe ElasticsearchRasi do
   context 'initialize from config' do
     before(:context) do
-      ES[:disputatio][:node_date_write] = true
+      ES[:disputatio][:node_write_date] = true
       @rasi_es = ElasticsearchRasi.new(:disputatio)
     end
 

@@ -4,6 +4,39 @@ require 'pry'
 $LOAD_PATH.unshift(File.expand_path(File.join(__dir__, '..', 'lib')))
 require 'elasticsearch_rasi'
 ES = {
+    twitter: {
+      base: 'twitter',
+      file: {
+        node: 'twitter_users',
+        mention: 'twitter_mentions' },
+      node_suffix: '_users',
+      mention_suffix: '_mentions',
+
+      node_read: '',
+      node_write: '_current',
+
+      mention_read: '',
+      mention_write: '',
+      mention_write_date: true,
+      mention_write_date_base: 'twitter_mentions',
+
+      node_alias: false,
+      mention_alias: true,
+
+      rotation: {
+        mention:{
+          rotate: true
+        }
+      },
+
+      connect: {
+        reload_on_failure: true,
+        host: ['localhost:9204'],
+        log: true
+      },
+      connect_attempts: 2,
+      connect_sleep: 2
+  },
   :disputatio => {
     :base           => 'disputatio',
     :node_suffix    => '_articles',

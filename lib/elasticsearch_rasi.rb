@@ -107,8 +107,6 @@ private
       opts["#{type}_client".to_sym]
     elsif client_type == :system
       write = ''
-      write << "_#{Time.now.strftime('%Y%m')}" if
-        access == :write && opts["#{type}_date_write".to_sym] == true
       base  = "#{opts[:prefix]}#{opts[:base]}"
       index = "#{base}#{opts[:"#{type}_suffix"]}"
       "#{index}#{opts[:"#{type}_#{access}"]}#{write}"

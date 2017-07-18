@@ -12,7 +12,7 @@ describe ElasticsearchRasi do
 
     let(:result) do
       es.mention.search(
-        Oj.load(%({"size": 1, "query": { "filtered": { "filter": {}}}})))
+        Oj.load(%({"size": 1, "query": { "bool": { "filter": {}}}})))
     end
 
     it 'should has search' do
@@ -66,7 +66,7 @@ describe ElasticsearchRasi do
           {
             '_id'     => 1,
             'title'   => 'titulek',
-            'cc'   => 'error',
+            'cc'      => 'error',
             'content' => 'titulek obsah' },
           {
             '_id'     => 2,
@@ -115,7 +115,7 @@ describe ElasticsearchRasi do
       end
 
       it 'should has date in 201701' do
-        expect(@bulk[0][:index][:_index]).to match(/201705/)
+        expect(@bulk[0][:index][:_index]).to match(/201701/)
       end
     end
   end
