@@ -130,8 +130,11 @@ describe ElasticsearchRasi do
 
       let(:data) do
         [{
-          '_id'          => 'too_old',
-          'published_at' => Time.now.months_ago(7).beginning_of_month.to_s },
+            '_id'          => 'too_old',
+            'published_at' => Time.now.months_ago(7).beginning_of_month.to_s },
+          {
+            '_id'          => 'also_too_old',
+            'published_at' => (Time.now.months_ago(6).beginning_of_month - 86_400).to_s },
          {
            '_id'          => 'just enough',
            'published_at' => Time.now.months_ago(6).beginning_of_month.to_s }]

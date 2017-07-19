@@ -18,6 +18,7 @@ ES = {
       mention_read: '',
       mention_write: '',
       mention_write_date: true,
+      mention_max_age: true,
       mention_write_date_base: 'twitter_mentions',
 
       node_alias: false,
