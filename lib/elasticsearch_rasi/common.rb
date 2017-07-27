@@ -1,4 +1,6 @@
 # encoding: utf-8
+require 'unicode_utils/downcase'
+require 'digest/sha1'
 
 class ElasticsearchRasi
   module Common
@@ -21,6 +23,23 @@ class ElasticsearchRasi
       return nil if parsed_published_at.to_i < @max_age ||
                     parsed_published_at.to_i > (Time.now.to_i + (3 * 3600))
       "#{index}_#{parsed_published_at.strftime('%Y%m')}"
+    end
+
+    def prepare_search_author!(doc)
+      author =
+        if doc['author'].is_a?(Hash)
+          doc['author']['name']
+        else
+          doc['author']
+        end
+
+      doc['search_author'] = {
+        'name' => author,
+        'author_hash' => compute_author_hash(author) }
+    end
+
+    def compute_author_hash(author)
+      UnicodeUtils.downcase(Digest::SHA1.hexdigest(author))
     end
 
     def create_bulk(slice, idx, method = :index, type = 'document')

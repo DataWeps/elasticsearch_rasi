@@ -1,7 +1,5 @@
 # encoding:utf-8
 require 'active_support/core_ext/object/deep_dup'
-require 'unicode_utils/downcase'
-require 'digest/sha1'
 
 class ElasticsearchRasi
   module Request
@@ -24,10 +22,6 @@ class ElasticsearchRasi
     def another_es?(method)
       !@es_another.empty? &&
         !@config[:another_methods].blank? && @config[:another_methods].include?(method.to_sym)
-    end
-
-    def compute_author_hash(author)
-      UnicodeUtils.downcase(Digest::SHA1.hexdigest(author))
     end
 
     def change_type?(config)
@@ -56,23 +50,7 @@ class ElasticsearchRasi
         data = in_data.values[0]
         data[:_type] = config["#{@rasi_type}_type".to_sym] if
           data.include?(:_type) && change_type?(config)
-
         data[:_index] = change_index(:_index, config, data)
-
-        next if @config[:verboom_bulk].blank?
-        next if data.blank? || data[:data].blank?
-        next if data[:data]['author'].blank?
-
-        author =
-          if data[:data]['author'].is_a?(Hash)
-            data[:data]['author']['name']
-          else
-            data[:data]['author']
-          end
-
-        data[:data]['search_author'] = {
-          'name' => author,
-          'author_hash' => compute_author_hash(author) }
       end
     end
 
