@@ -26,6 +26,7 @@ class ElasticsearchRasi
     end
 
     def prepare_search_author!(doc)
+      return if doc['author'].blank?
       author =
         if doc['author'].is_a?(Hash)
           doc['author']['name']
@@ -46,6 +47,7 @@ class ElasticsearchRasi
       slice.map do |doc|
         id_save = doc.delete('_id') || next
         index = prepare_index(idx, doc) || next
+        prepare_search_author!(doc)
         doc = { :doc => doc } if method == :update
         {
           method => {
