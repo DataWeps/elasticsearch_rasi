@@ -4,20 +4,38 @@ require 'oj'
 require 'elasticsearch'
 
 describe ElasticsearchRasi do
-  context 'initialize from config' do
-    before(:context) do
-      ES[:disputatio][:node_write_date] = true
-      @rasi_es = ElasticsearchRasi.new(:disputatio)
+  context 'read from specific date' do
+    before :context do
+      ES[:disputatio][:mention_read_date] = true
+      ES[:disputatio][:mention_read_date_base] = 'disputatio_mentions'
+      ES[:disputatio][:mention_max_age] = 6
     end
 
-    it 'node should has date name index' do
-      expect(@rasi_es.node.config[:idx_write]).to \
-        match(/#{Regexp.escape(Time.now.strftime('%Y%m'))}/)
+    context 'save node' do
+      subject(:es) { ElasticsearchRasi.new(:disputatio) }
+
+      it 'should has 6 months' do
+        expect(es.mention.read_date_months.size).to be(ES[:disputatio][:mention_max_age] + 1)
+      end
+    end
+  end
+
+  context 'read from current index' do
+    before :context do
+      ES[:disputatio][:mention_read_date] = false
+      ES[:disputatio][:mention_max_age] = 6
     end
 
-    it 'mention shouldnt has date name index' do
-      expect(@rasi_es.mention.config[:idx_write]).not_to \
-        match(/#{Regexp.escape(Time.now.strftime('%Y%m'))}/)
+    context 'save node' do
+      subject(:es) { ElasticsearchRasi.new(:disputatio) }
+
+      it 'should has 6 months' do
+        expect(es.mention.read_date_months).to be_empty
+      end
+
+      it 'should has read date false' do
+        expect(es.mention.read_date).to be_falsey
+      end
     end
   end
 end

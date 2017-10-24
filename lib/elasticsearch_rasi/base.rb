@@ -16,7 +16,7 @@ class ElasticsearchRasi
       return {} if id.empty?
 
       docs = {}
-      params = { index: idx, type: type }
+      params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(id).each do |slice|
         slice_params = params.merge(
           body: { ids: slice }
@@ -39,7 +39,7 @@ class ElasticsearchRasi
       return {} if ids.empty?
 
       docs = {}
-      params = { index: idx, type: type }
+      params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(ids).each do |slice|
         slice_params = params.merge(body: get_docs_query(
           { ids: { type: type, values: slice } },
@@ -112,7 +112,7 @@ class ElasticsearchRasi
     def query_search(query, idx, type = 'document')
       response = request(
         :search,
-        index: idx,
+        index: prepare_read_index(idx),
         type: type,
         body: query
       ) || (return {})
@@ -124,7 +124,7 @@ class ElasticsearchRasi
     def query_count(query, idx, type = 'document')
       response = request(
         :search,
-        index: idx,
+        index: prepare_read_index(idx),
         type:  type,
         body:  query)
       response['hits']['total'].to_i || 0

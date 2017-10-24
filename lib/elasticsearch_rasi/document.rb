@@ -7,7 +7,7 @@ require 'active_support/core_ext/time/calculations'
 
 class ElasticsearchRasi
   class Document
-    attr_reader :config, :rasi_type, :write_date, :max_age
+    attr_reader :config, :rasi_type, :write_date, :max_age, :read_date, :read_date_months
     include Base
     include Common
     include Scroll
@@ -15,15 +15,32 @@ class ElasticsearchRasi
     def initialize(es, config, es_another = [])
       @config     = config
       @max_age    = nil
+      @read_date_months = []
       @write_date =
         if @config["#{@rasi_type}_write_date".to_sym].present?
-          @max_age = Time.now.getutc
-                         .months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6)
+          @max_age = Time.now \
+                         .months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6) \
                          .beginning_of_month.to_i
           true
         else
           false
         end
+      @read_date =
+        if @config["#{@rasi_type}_read_date".to_sym].present?
+          from_month = Time.now.months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6).beginning_of_month
+          this_month = Time.now.end_of_month
+          loop do
+            break if from_month > this_month
+            @read_date_months <<
+              "#{@config[:mention_read_date_base] || @config[:idx_mention_read]}" \
+                "_#{from_month.strftime('%Y%m')}"
+            from_month = from_month.months_since(1)
+          end
+          true
+        else
+          false
+        end
+
       @es = es
       @es_another = es_another
     end

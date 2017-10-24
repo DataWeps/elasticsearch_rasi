@@ -7,7 +7,7 @@ require 'active_support/core_ext/time/calculations'
 describe ElasticsearchRasi do
   context 'search' do
     let(:es) do
-      ElasticsearchRasi.new(:disputatio)
+      ElasticsearchRasi.new(:twitter)
     end
 
     let(:result) do
@@ -111,11 +111,11 @@ describe ElasticsearchRasi do
 
     context 'save node' do
       before :context do
-        @bulk = @es.mention.create_bulk([{'_id' => 'test', 'published_at' => '2017-01-05'}], @es.mention.config[:idx_write])
+        @bulk = @es.mention.create_bulk([{'_id' => 'test', 'published_at' => Time.now.strftime('%Y-%m-%d')}], @es.mention.config[:idx_write])
       end
 
       it 'should has date in 201701' do
-        expect(@bulk[0][:index][:_index]).to match(/201701/)
+        expect(@bulk[0][:index][:_index]).to match(/#{Regexp.escape(Time.now.strftime('%Y%m'))}/)
       end
     end
   end

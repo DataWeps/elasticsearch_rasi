@@ -25,6 +25,11 @@ class ElasticsearchRasi
       "#{index}_#{parsed_published_at.strftime('%Y%m')}"
     end
 
+    def prepare_read_index(index)
+      return index unless @read_date
+      @read_date_months.join(',')
+    end
+
     def prepare_search_author!(doc)
       return if doc['author'].blank?
       author =

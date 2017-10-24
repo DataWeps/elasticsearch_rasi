@@ -18,8 +18,9 @@ ES = {
       mention_read: '',
       mention_write: '',
       mention_write_date: true,
-      mention_max_age: true,
       mention_write_date_base: 'twitter_mentions',
+      mention_read_date_base: 'twitter_mentions',
+      mention_read_date: true,
 
       node_alias: false,
       mention_alias: true,
@@ -32,7 +33,7 @@ ES = {
 
       connect: {
         reload_on_failure: true,
-        host: ['localhost:9204'],
+        host: ['localhost:9202'],
         log: true
       },
       connect_attempts: 2,
@@ -60,7 +61,7 @@ ES = {
     :mention_alias  => true,
 
     connect: {
-      host: 'localhost:9204',
+      host: 'localhost:9202',
       log: true },
       # { connect: {
       #   host: 'localhost:9203',
@@ -89,7 +90,7 @@ ES = {
     node_alias:  false,
     mention_alias:  true,
     connect: {
-      host: 'localhost:9200',
+      host: 'localhost:9202',
       log: false }
     # connect_another: [
     #   { host: 'es1.weps.cz:9200', log: true } ],

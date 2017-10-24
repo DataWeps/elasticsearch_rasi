@@ -65,9 +65,10 @@ class ElasticsearchRasi
           mention_alias:           opts[:mention_alias]).merge(connect: opts[:connect])
       end
 
-    @config[:connect][:retry_on_failure] ||= true if
-     (@config[:connect][:host] || @config[:connect][:hosts] || []).size > 1
-
+    if (@config[:connect][:host] || @config[:connect][:hosts] || []).size > 1
+      @config[:connect][:retry_on_failure]   ||= true
+      @config[:connect][:reload_connections] ||= true
+    end
     @es = Elasticsearch::Client.new(@config[:connect].dup)
     @es_another =
       if @config.include?(:connect_another) && !@config[:connect_another].blank?

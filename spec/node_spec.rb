@@ -62,7 +62,7 @@ describe ElasticsearchRasi do
     end
 
     it 'fail saves' do
-      expect(@response).to be_a(TrueClass)
+      expect(@response[:ok]).to be_a(FalseClass)
     end
   end
 end

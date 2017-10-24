@@ -17,7 +17,7 @@ class ElasticsearchRasi
     def get_docs_query_ids(query, size = ElasticsearchRasi::SLICES)
       {
         "size"   => size,
-        "fields" => [],
+        "_source" => [],
         "query" => {
           "bool" => {
             "filter" => query,

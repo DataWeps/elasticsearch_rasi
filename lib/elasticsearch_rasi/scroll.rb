@@ -17,7 +17,7 @@ class ElasticsearchRasi
     def scan(query, idx, params = {})
       response = request(
         :search,
-        { index: idx, scroll: SCROLL, body: query }.merge(params)) || (return false)
+        { index: prepare_read_index(idx), scroll: SCROLL, body: query }.merge(params)) || (return false)
       {
         'hits'     => { 'hits' => response['hits']['hits'] },
         scroll:    params[:scroll] || SCROLL,
