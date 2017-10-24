@@ -10,7 +10,7 @@ class ElasticsearchRasi
     include Query
     # alias method for getting documents
     # - use for index without read alias - we can use _mget query
-    def get_docs_by_mget(id, idx = @idx, type = 'document', with_source = true, source: nil)
+    def get_docs_by_mget(id, idx = @idx, type = 'document', with_source = true, source = nil)
       return {} unless id
       id = [id].flatten
       return {} if id.empty?
