@@ -32,7 +32,7 @@ class ElasticsearchRasi
           loop do
             break if from_month > this_month
             @read_date_months <<
-              "#{@config[:mention_read_date_base] || @config[:idx_mention_read]}" \
+              "#{@config["#{@rasi_type}_read_date_base".to_sym] || @config["idx_#{@rasi_type}_read".to_sym]}" \
                 "_#{from_month.strftime('%Y%m')}"
             from_month = from_month.months_since(1)
           end
@@ -46,26 +46,31 @@ class ElasticsearchRasi
     end
 
     def get_docs(
-      ids, idx = @config[:idx_read], type = @config[:type], source = true)
+      ids:,
+      idx: @config[:idx_read],
+      type: @config[:type],
+      with_source: true,
+      source: nil)
 
       if @config[:alias]
-        get_docs_by_filter(ids, idx, type, source)
+        get_docs_by_filter(ids, idx, type, with_source, source)
       else
-        get_docs_by_mget(ids, idx, type, source)
+        get_docs_by_mget(ids, idx, type, with_source, source)
       end
     end
 
     # return one document['_source'] by its id
-    def get(id, idx = @config[:idx_read], type = @config[:type])
+    def get(id:, idx: @config[:idx_read], type: @config[:type], just_source: true, source: nil)
       if @config[:alias]
-        get_docs_by_filter([id], idx, type, true)[id] || {}
+        response = get_docs_by_filter([id], idx, type, true, source)
+        just_source ? response[id] : response
       else
-        get_doc(id, idx, type)
+        get_doc(id, idx, type, just_source, source)
       end
     end
 
     # returns just ids
-    def get_ids(ids, idx = @config[:idx_read], type = @config[:type])
+    def get_ids(ids:, idx: @config[:idx_read], type: @config[:type])
       if @config[:alias]
         get_docs_by_filter(ids, idx, type, false)
       else

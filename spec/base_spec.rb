@@ -68,7 +68,7 @@ describe ElasticsearchRasi do
       @rasi_es.mention.refresh
       @rasi_es.mention.update_document('_id' => @id, content: 'different content')
       @rasi_es.mention.refresh
-      document = @rasi_es.mention.get(@id)
+      document = @rasi_es.mention.get(id: @id)
       document['content'] != content_before
     end
 

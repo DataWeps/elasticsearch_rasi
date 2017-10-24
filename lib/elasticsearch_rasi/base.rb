@@ -10,7 +10,7 @@ class ElasticsearchRasi
     include Query
     # alias method for getting documents
     # - use for index without read alias - we can use _mget query
-    def get_docs_by_mget(id, idx = @idx, type = 'document', source = true)
+    def get_docs_by_mget(id, idx = @idx, type = 'document', with_source = true, source: nil)
       return {} unless id
       id = [id].flatten
       return {} if id.empty?
@@ -21,19 +21,20 @@ class ElasticsearchRasi
         slice_params = params.merge(
           body: { ids: slice }
         )
-        slice_params[:_source] = [] unless source
+        slice_params[:_source] = [] unless with_source
+        slice_params[:_source] ||= source if source
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
           next if !doc['exists'] && !doc['found']
           docs[doc['_id']] = doc['_source']
         end
       end
-      source ? docs : docs.keys
+      with_source ? docs : docs.keys
     end
 
     # alias method for getting documents
     # - use for index with read alias - we have to use use _ids filter query
-    def get_docs_by_filter(ids, idx = @idx, type = 'document', source = true)
+    def get_docs_by_filter(ids, idx = @idx, type = 'document', with_source = true, source = nil)
       return {} unless ids
       ids = [ids] unless ids.is_a?(Array)
       return {} if ids.empty?
@@ -44,17 +45,24 @@ class ElasticsearchRasi
         slice_params = params.merge(body: get_docs_query(
           { ids: { type: type, values: slice } },
           slice.size))
-        slice_params[:_source] = [] unless source
+        slice_params[:_source] = [] unless with_source
+        slice_params[:_source] ||= source if source
         response = request(:search, slice_params) || (return nil)
         parse_response(response, docs)
       end
-      source ? docs : docs.keys
+      with_source ? docs : docs.keys
     end # get_docs
 
     # get document from ES with direct query trough GET request
     #   - return nil in case of error, otherwise {id => document}
-    def get_doc(id, idx = @idx, type = 'document', just_source = true)
-      response = request(:get, index: idx, type: type, id: id, ignore: 404)
+    def get_doc(id, idx = @idx, type = 'document', just_source = true, source = nil)
+      params = {
+        index: prepare_read_index(idx),
+        type: type,
+        id: id,
+        ignore: 404 }
+      params[:_source] ||= source if source
+      response = request(:get, params)
       return {} if !response || !response.is_a?(Hash) ||
                    !(response['exists'] || response['found'])
       if just_source

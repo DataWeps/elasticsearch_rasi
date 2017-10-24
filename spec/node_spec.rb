@@ -32,11 +32,11 @@ describe ElasticsearchRasi do
     end
 
     it 'read node' do
-      expect(@rasi_es.node.get_docs(1)).not_to eq({})
+      expect(@rasi_es.node.get_docs(ids: [1], source: [])).not_to eq({})
     end
 
     it 'read node ids' do
-      ids = @rasi_es.node.get_ids([1])
+      ids = @rasi_es.node.get_ids(ids: [1])
       expect(ids[0]).to eq("1")
     end
 
