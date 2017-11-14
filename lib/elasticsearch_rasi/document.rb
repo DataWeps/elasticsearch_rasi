@@ -17,7 +17,8 @@ class ElasticsearchRasi
       @max_age    = nil
       @read_date_months = []
       @write_date =
-        if @config["#{@rasi_type}_write_date".to_sym].present?
+        if @config["#{@rasi_type}_write_date".to_sym].present? \
+          && @config[:ignore_write_date] != true
           @max_age = Time.now \
                          .months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6) \
                          .beginning_of_month.to_i
