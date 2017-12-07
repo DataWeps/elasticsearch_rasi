@@ -18,10 +18,17 @@ class ElasticsearchRasi
       @read_date_months = []
       @write_date =
         if @config["#{@rasi_type}_write_date".to_sym].present? \
-          && @config[:ignore_write_date] != true
-          @max_age = Time.now \
-                         .months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6) \
-                         .beginning_of_month.to_i
+          # for data moving between elastics, we need to keep recognizing index basen on published_at
+          #   but at the same time, we want to save all the mentions into the database
+          #   and ignore max_age
+          @max_age =
+            if @config[:ignore_max_age]
+              nil
+            else
+              Time.now \
+                  .months_ago(@config["#{@rasi_type}_max_age".to_sym] || 6) \
+                  .beginning_of_month.to_i
+            end
           true
         else
           false
