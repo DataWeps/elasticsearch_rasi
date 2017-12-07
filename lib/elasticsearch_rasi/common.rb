@@ -20,8 +20,10 @@ class ElasticsearchRasi
     def prepare_index(index, doc)
       return index if doc.blank? || !@write_date || doc['published_at'].blank?
       parsed_published_at = Time.parse(doc['published_at'])
-      return nil if parsed_published_at.to_i < @max_age ||
-                    parsed_published_at.to_i > (Time.now.to_i + (3 * 3600))
+      # max_age could be nil in the case of ignore_max_age
+      return nil if @max_age &&
+                    (parsed_published_at.to_i < @max_age ||
+                     parsed_published_at.to_i > (Time.now.to_i + (3 * 3600)))
       "#{index}_#{parsed_published_at.strftime('%Y%m')}"
     end
 
