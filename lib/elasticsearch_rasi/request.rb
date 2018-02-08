@@ -1,5 +1,6 @@
 # encoding:utf-8
 require 'active_support/core_ext/object/deep_dup'
+require 'active_support/core_ext/object/blank'
 
 class ElasticsearchRasi
   module Request
@@ -59,6 +60,7 @@ class ElasticsearchRasi
       counter = 0
       begin
         response = @es.send(method, params)
+        raise(NoMethodError, "'#{response}' '#{response.class}' '#{params}'") if response.blank?
         return response if
           !another_es?(method) || ![:bulk, :index, :update].include?(method)
         @es_another.each do |es|
