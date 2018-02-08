@@ -33,7 +33,7 @@ class ElasticsearchRasi
     end
 
     def prepare_search_author!(doc)
-      return if doc['author'].blank?
+      return if doc['author'].blank? || doc['author']['name'].blank?
       author =
         if doc['author'].is_a?(Hash)
           doc['author']['name']
