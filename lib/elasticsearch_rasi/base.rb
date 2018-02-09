@@ -18,9 +18,7 @@ class ElasticsearchRasi
       docs = {}
       params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(id).each do |slice|
-        slice_params = params.merge(
-          body: { ids: slice }
-        )
+        slice_params = params.merge(body: { ids: slice })
         slice_params[:_source] = [] unless with_source
         slice_params[:_source] ||= source if source
         response = request(:mget, slice_params) || (return nil)
@@ -38,8 +36,9 @@ class ElasticsearchRasi
       return {} unless ids
       ids = [ids] unless ids.is_a?(Array)
       return {} if ids.empty?
-
+      response = nil
       docs = {}
+
       params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(ids).each do |slice|
         slice_params = params.merge(body: get_docs_query(
@@ -47,7 +46,7 @@ class ElasticsearchRasi
           slice.size))
         slice_params[:_source] = [] unless with_source
         slice_params[:_source] ||= source if source
-        response = request(:search, slice_params) || (return nil)
+        response = request(:search, slice_params)
         parse_response(response, docs)
       end
       with_source ? docs : docs.keys
