@@ -60,7 +60,8 @@ class ElasticsearchRasi
       counter = 0
       begin
         response = @es.send(method, params)
-        raise(NoMethodError, "'#{response}' '#{response.class}' '#{params}'") if response.blank?
+        # Strange behavior, sometimes ES gem returns empty result, but with OK headers
+        raise(Faraday::ConnectionFailed) if response.blank?
         return response if
           !another_es?(method) || ![:bulk, :index, :update].include?(method)
         @es_another.each do |es|
