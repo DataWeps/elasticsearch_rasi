@@ -73,7 +73,8 @@ class ElasticsearchRasi
 
     # docs - [docs] or {id => doc}
     def save_docs(docs, method = :index, idx = @idx, type = 'document')
-      return true if docs.blank?
+      result = { ok: true, errors: [] }
+      return result if docs.blank?
       to_save =
         if docs.is_a?(Hash) # convert to array
           docs.stringify_keys!
@@ -88,8 +89,7 @@ class ElasticsearchRasi
         else
           docs
         end
-      raise "Incorrect docs supplied (#{docs.class})" unless to_save.is_a?(Array)
-      errors = []
+      raise("Incorrect docs supplied (#{docs.class})") unless to_save.is_a?(Array)
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
         bulk = create_bulk(slice, idx, method, type)
         next if bulk.blank?
@@ -98,7 +98,7 @@ class ElasticsearchRasi
         sleep(@config[:bulk_sleep].to_i) if @config[:bulk_sleep]
 
         next if response['errors'].blank?
-        errors <<
+        result[:errors] <<
           if response['items'].blank?
             response['errors']
           else
@@ -109,9 +109,8 @@ class ElasticsearchRasi
             end.compact
           end
       end
-      {
-        ok: errors.empty? ? true : false,
-        errors: errors }
+      result[:ok] = false unless result[:errors].empty?
+      result
     end # save_docs
 
     # query - hash of the query to be done
@@ -121,8 +120,7 @@ class ElasticsearchRasi
         :search,
         index: prepare_read_index(idx),
         type: type,
-        body: query
-      ) || (return {})
+        body: query) || (return {})
       parse_response(response)
     end # count
 

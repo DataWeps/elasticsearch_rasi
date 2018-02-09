@@ -19,6 +19,18 @@ describe ElasticsearchRasi do
         expect(@doc['search_author']['name']).to eq('Pepa')
       end
     end
+
+    describe 'parse_response' do
+      context 'wrong query' do
+        let(:response) do
+          @rasi_es.node.search(blbost: {})
+        end
+
+        it 'wrong query' do
+          expect { response }.to raise_error(ParseResponseError)
+        end
+      end
+    end
   end
 
   describe 'write_date' do

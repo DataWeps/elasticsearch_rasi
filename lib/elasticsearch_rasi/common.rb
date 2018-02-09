@@ -2,6 +2,8 @@
 require 'unicode_utils/downcase'
 require 'digest/sha1'
 
+require_relative 'err/parse_response_error'
+
 class ElasticsearchRasi
   module Common
     # prepare array indexes,lengths in the manner of slices
@@ -14,6 +16,7 @@ class ElasticsearchRasi
 
     # translate results from ES to {id => doc}
     def parse_response(response, docs = {})
+      raise(ParseResponseError, response.to_s) if !response || !response.include?('hits')
       response['hits']['hits'].each_with_object(docs) { |doc, mem| mem[doc['_id']] = doc['_source'] }
     end
 
