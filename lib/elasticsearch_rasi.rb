@@ -28,7 +28,7 @@ class ElasticsearchRasi
   DEFAULT_ANOTHER_METHODS = [:index, :update, :bulk].freeze
   LOG_FILE = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
-  attr_accessor :config
+  attr_accessor :config, :es
 
   # idx - index name OR index type
   # opts - optional configuration:
