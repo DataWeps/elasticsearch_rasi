@@ -19,8 +19,8 @@ class ElasticsearchRasi
       params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(id).each do |slice|
         slice_params = params.merge(body: { ids: slice })
-        slice_params[:_source] = [] unless with_source
-        slice_params[:_source] ||= source if source
+        slice_params[:_source] = false unless with_source
+        slice_params[:_source] = source unless source.nil?
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
           next if !doc['exists'] && !doc['found']
@@ -44,8 +44,9 @@ class ElasticsearchRasi
         slice_params = params.merge(body: get_docs_query(
           { ids: { type: type, values: slice } },
           slice.size))
-        slice_params[:_source] = [] unless with_source
-        slice_params[:_source] ||= source if source
+        slice_params[:_source] = [] if
+          !with_source || (source.is_a?(Array) && source.blank?)
+        slice_params[:_source] ||= source if source.present?
         response = request(:search, slice_params)
         parse_response(response, docs)
       end
