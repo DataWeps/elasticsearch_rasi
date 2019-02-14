@@ -10,6 +10,7 @@ require 'elasticsearch_rasi/util'
 require 'elasticsearch_rasi/query'
 require 'elasticsearch_rasi/request'
 require 'elasticsearch_rasi/common'
+require 'elasticsearch_rasi/lang_to_country'
 
 # alias query methods
 require 'elasticsearch_rasi/scroll'
