@@ -10,7 +10,7 @@ require 'elasticsearch_rasi/util'
 require 'elasticsearch_rasi/query'
 require 'elasticsearch_rasi/request'
 require 'elasticsearch_rasi/common'
-require 'elasticsearch_rasi/lang_to_country'
+require 'util/lang_to_country'
 
 # alias query methods
 require 'elasticsearch_rasi/scroll'
@@ -99,6 +99,10 @@ class ElasticsearchRasi
   def document
     @document ||= ElasticsearchRasi::Document.new(@es, @config, @es_another)
     @document
+  end
+
+  def translate_lang_to_country(language)
+    TranslateLangToCountry.translate_lang_to_country(language)
   end
 
 private
