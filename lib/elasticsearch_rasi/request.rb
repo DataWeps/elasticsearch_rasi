@@ -2,7 +2,7 @@
 require 'active_support/core_ext/object/deep_dup'
 require 'active_support/core_ext/object/blank'
 
-class ElasticsearchRasi
+module ElasticsearchRasi
   module Request
     CONTENT_TYPE     = { content_type: 'application/json' }.freeze
     CONNECT_ATTEMPTS = 5

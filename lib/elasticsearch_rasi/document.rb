@@ -1,16 +1,17 @@
 # encoding:utf-8
 require 'elasticsearch_rasi/base'
+require 'elasticsearch_rasi/query'
 require 'elasticsearch_rasi/common'
 require 'elasticsearch_rasi/scroll'
 
 require 'active_support/core_ext/time/calculations'
 
-class ElasticsearchRasi
+module ElasticsearchRasi
   class Document
-    attr_reader :config, :rasi_type, :write_date, :max_age, :read_date, :read_date_months
-    include Base
+    include Query
     include Common
-    include Scroll
+    include Request
+    attr_reader :config, :rasi_type, :write_date, :max_age, :read_date, :read_date_months
 
     def initialize(es, config, es_another = [])
       @config     = config
@@ -70,9 +71,9 @@ class ElasticsearchRasi
     # returns just ids
     def get_ids(ids:, idx: @config[:idx_read], type: @config[:type])
       if @config[:alias]
-        get_docs_by_filter(ids, idx, type, false)
+        Query.get_docs_by_filter(ids, idx, type, false)
       else
-        get_docs_by_mget(ids, idx, type, false)
+        Query.get_docs_by_mget(ids, idx, type, false)
       end
     end
 
@@ -82,7 +83,7 @@ class ElasticsearchRasi
       method = :index,
       idx = @config[:idx_write],
       type = @config[:type])
-      save_docs(mentions, method, idx, type)
+      Save.save_docs(mentions, method, idx, type)
     end
 
     def update_document(
@@ -90,19 +91,19 @@ class ElasticsearchRasi
       method = :update,
       idx = @config[:idx_write],
       type = @config[:type])
-      save_docs(mentions, method, idx, type)
+      Base.save_docs(mentions, method, idx, type)
     end
 
     def scroll(query, params = {}, idx = @config[:idx_read], &block)
-      scan_search(query, idx, params, &block)
+      Scroll.scan_search(query, idx, params, &block)
     end
 
     def scan_with_total(query, params = {}, idx = @config[:idx_read])
-      scan(query, idx, params)
+      Scroll.scan(query, idx, params)
     end
 
     def count(query, idx = @config[:idx_read], type = @config[:type])
-      query_count(query, idx, type)
+      Query.query_count(query, idx, type)
     end
 
     def refresh(idx = @config[:idx_read])
@@ -110,7 +111,7 @@ class ElasticsearchRasi
     end
 
     def search(query, idx = @config[:idx_read], type = @config[:type])
-      query_search(query, idx, type)
+      Query.query_search(query, idx, type)
     end
 
   private

@@ -40,7 +40,7 @@ ES = {
       connect_sleep: 2
   },
   :disputatio => {
-    :base           => 'disputatio',
+    :base           => 'test',
     :node_suffix    => '_articles',
     :mention_suffix => '_mentions',
     file: {
@@ -49,13 +49,9 @@ ES = {
     },
 
     :node_read      => '',
-    :node_write     => '_current',
 
     :mention_read   => '',
-    :mention_write  => '_current',
 
-    :node_client    => 'news',
-    :mention_client => 'discussions',
 
     :node_alias     => true,
     :mention_alias  => true,

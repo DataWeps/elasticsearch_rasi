@@ -4,7 +4,7 @@ require 'digest/sha1'
 
 require_relative 'err/parse_response_error'
 
-class ElasticsearchRasi
+module ElasticsearchRasi
   module Common
     # prepare array indexes,lengths in the manner of slices
     # e.g. for a.length=25 and cnt=10 return [[0,10],[10,10],[20,5]]

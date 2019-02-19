@@ -1,6 +1,5 @@
 require 'spec_helper'
 $LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
-require 'oj'
 require 'elasticsearch'
 
 describe ElasticsearchRasi do

@@ -1,8 +1,8 @@
 # encoding:utf-8
 require 'cgi'
 
-class ElasticsearchRasi
-  module Util
+module ElasticsearchRasi
+  class Util
     class << self
       # assemble additional parameter string from options in hash
       # e.g. {'arg1' => 'val1', 'arg2' => 'val2'} => 'arg1=val1&arg2=val2'

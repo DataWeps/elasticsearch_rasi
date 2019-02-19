@@ -1,6 +1,5 @@
 require 'spec_helper'
 $LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
-require 'oj'
 
 describe ElasticsearchRasi do
   context 'initialize from config' do
