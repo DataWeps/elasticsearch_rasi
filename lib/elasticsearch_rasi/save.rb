@@ -20,7 +20,6 @@ module ElasticsearchRasi
       result
     end
 
-  private
 
     def create_bulk(slice, idx, method = :index, type = 'document')
       slice.map do |doc|
@@ -35,6 +34,8 @@ module ElasticsearchRasi
             _type:  type }.merge(doc.empty? ? {} : { data: doc }) }
       end.compact
     end
+
+  private
 
     def slice_save!(result, to_save, method, idx, type)
       Common.array_slice_indices(to_save, BULK_STORE).each do |slice|

@@ -1,13 +1,15 @@
 # encoding:utf-8
 require 'active_support/core_ext/hash'
 
+require_relative 'err/parse_response_error'
+
 module ElasticsearchRasi
   module Scroll
     include Request
     SCROLL = '1m'.freeze
     def scroll_search(query, idx, params, &block)
       params.symbolize_keys!
-      scroll = scan(query, idx, params) || (return 0)
+      scroll = scroll_scan(query, idx, params) || (return 0)
       scroll_each(scroll, &block)
     end
 
@@ -18,9 +20,10 @@ module ElasticsearchRasi
     def scroll_scan(query, idx, params = {})
       response = request(
         :search,
-        { index:  prepare_read_index(idx),
+        { index:  Common.prepare_read_index(idx, @read_date, @read_date_months),
           scroll: SCROLL,
           body:   query }.merge(params)) || (return false)
+      raise(ParseResponseError, response.to_s) if !response || response.include?('errors')
       {
         'hits' => { 'hits' => response['hits']['hits'] },
         scroll:    params[:scroll] || SCROLL,

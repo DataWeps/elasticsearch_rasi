@@ -96,6 +96,13 @@ module ElasticsearchRasi
       save_docs(docs, method, idx, type)
     end
 
+    def delete_document(
+      docs:,
+      idx: @config[:idx_write],
+      type: @config[:type])
+      save_docs(docs, :delete, idx, type)
+    end
+
     def scroll(query:, params: {}, idx: @config[:idx_read], &block)
       scroll_search(query, idx, params, &block)
     end

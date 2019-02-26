@@ -32,22 +32,20 @@ def test_count
             resource: 'resource' } } } })
 end
 
-def create_ids(ids, data = [])
-  [ids].flatten.each_with_index do |id, index|
-    es.index(
-      index: klass.mention.config[:idx_read],
-      type:  klass.mention.config[:type],
-      body: { content: data[index] || 'data', resource: 'resource' },
-      id:   id)
-  end
-  es.indices.refresh(index: klass.mention.config[:idx_read])
+def create_ids(es, ids, data = [])
+  es.mention.save_document(docs: create_bulk(ids, data))
+  es.mention.refresh
 end
 
-def delete_ids(ids)
-  [ids].flatten.each do |id|
-    es.delete(
-      index: klass.mention.config[:idx_read],
-      type:  klass.mention.config[:type],
-      id:    id)
+def create_bulk(ids, data)
+  ids.each_with_index.map do |id, index|
+    temp = { '_id' => id }
+    temp['content'] = (data[index] || index).to_s if data
+    temp
   end
+end
+
+def delete_ids(es, ids)
+  es.mention.delete_document(docs: create_bulk(ids, nil))
+  es.mention.refresh
 end
