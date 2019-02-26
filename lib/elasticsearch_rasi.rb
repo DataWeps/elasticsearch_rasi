@@ -83,17 +83,14 @@ module ElasticsearchRasi
 
     def mention
       @mention ||= ElasticsearchRasi::Mention.new(@es, @config, @es_another)
-      @mention
     end
 
     def node
       @node ||= ElasticsearchRasi::Node.new(@es, @config, @es_another)
-      @node
     end
 
     def document
       @document ||= ElasticsearchRasi::Document.new(@es, @config, @es_another)
-      @document
     end
 
     def translate_lang_to_country(language)
@@ -103,7 +100,7 @@ module ElasticsearchRasi
   private
 
     def get_index(opts, type, access, client_type = :system)
-      return nil unless opts && !opts.empty?
+      return nil if opts.blank?
       if client_type == :client && opts.include?("#{type}_client".to_sym)
         opts["#{type}_client".to_sym]
       elsif client_type == :system

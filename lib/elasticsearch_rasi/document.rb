@@ -104,15 +104,15 @@ module ElasticsearchRasi
       scroll_scan(query, idx, params)
     end
 
-    def count(query, idx = @config[:idx_read], type = @config[:type])
+    def count(query:, idx: @config[:idx_read], type: @config[:type])
       query_count(query, idx, type)
     end
 
-    def refresh(idx = @config[:idx_read])
+    def refresh(idx: @config[:idx_read])
       @es.indices.refresh(index: idx)
     end
 
-    def search(query, idx = @config[:idx_read], type = @config[:type])
+    def search(query:, idx: @config[:idx_read], type: @config[:type])
       query_search(query, idx, type)
     end
 

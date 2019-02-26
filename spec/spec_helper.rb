@@ -10,8 +10,7 @@ ES = {
     mention_suffix: '_mentions',
     file: {
       node: 'node',
-      mention: 'mention'
-    },
+      mention: 'mention' },
     node_read:       '',
     mention_read:    '',
 
@@ -22,5 +21,33 @@ ES = {
       host: 'localhost:9202',
       log: true },
     another_methods: [:bulk, :update, :index],
-    verboom_bulk: true }
-}
+    verboom_bulk: true } }
+
+def test_count
+  klass.mention.count(
+    query: {
+      bool: {
+        filter: {
+          term: {
+            resource: 'resource' } } } })
+end
+
+def create_ids(ids, data = [])
+  [ids].flatten.each_with_index do |id, index|
+    es.index(
+      index: klass.mention.config[:idx_read],
+      type:  klass.mention.config[:type],
+      body: { content: data[index] || 'data', resource: 'resource' },
+      id:   id)
+  end
+  es.indices.refresh(index: klass.mention.config[:idx_read])
+end
+
+def delete_ids(ids)
+  [ids].flatten.each do |id|
+    es.delete(
+      index: klass.mention.config[:idx_read],
+      type:  klass.mention.config[:type],
+      id:    id)
+  end
+end

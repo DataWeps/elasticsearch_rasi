@@ -27,7 +27,6 @@ module ElasticsearchRasi
     end
 
     def query_docs_by_mget(ids, idx = @idx, type = 'document', with_source = true, source = nil)
-      docs = {}
       docs_query(
         request_type: :mget,
         ids: ids,
@@ -35,14 +34,13 @@ module ElasticsearchRasi
         type: type,
         with_source: with_source,
         source: source,
-        query_block: proc { |slice| get_mget_query(ids: slice) },
+        query_block: proc { |slice| get_mget_query(slice) },
         parse_block: proc do |response|
-          response['docs'].each do |doc|
+          response['docs'].each_with_object({}) do |doc, mem|
             next unless doc['found']
-            docs[doc['_id']] = doc['_source']
+            mem[doc['_id']] = doc['_source']
           end
         end)
-      docs
     end
 
     # query - hash of the query to be done
@@ -102,7 +100,16 @@ module ElasticsearchRasi
 
   private
 
-    def docs_query(request_type:, ids:, idx:, type: 'document', with_source: true, source: nil, query_block:, parse_block:)
+    def docs_query(
+      request_type:,
+      ids:,
+      idx:,
+      query_block:,
+      parse_block:,
+      type: 'document',
+      with_source: true,
+      source: nil)
+
       return {} unless ids
       ids = [ids].flatten.compact
       return {} if ids.empty?

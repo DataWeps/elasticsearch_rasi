@@ -3,6 +3,7 @@ require 'active_support/core_ext/hash'
 
 module ElasticsearchRasi
   module Scroll
+    include Request
     SCROLL = '1m'.freeze
     def scroll_search(query, idx, params, &block)
       params.symbolize_keys!
@@ -17,28 +18,28 @@ module ElasticsearchRasi
     def scroll_scan(query, idx, params = {})
       response = request(
         :search,
-        { index: prepare_read_index(idx),
+        { index:  prepare_read_index(idx),
           scroll: SCROLL,
-          body: query }.merge(params)) || (return false)
+          body:   query }.merge(params)) || (return false)
       {
-        'hits'     => { 'hits' => response['hits']['hits'] },
+        'hits' => { 'hits' => response['hits']['hits'] },
         scroll:    params[:scroll] || SCROLL,
         scroll_id: response['_scroll_id'],
         total:     response['hits']['total'].to_i }
-    end # scan
+    end
 
     # wrapper to scroll each document for the initialized scan
     # scan - hash as returned by scan method above
     # each document is yielded for processing
     # return nil in case of error (any of the requests failed),
     # count of documents scrolled otherwise
-    def scroll_each(scan, &block)
+    def scroll_each(scan)
       scan.delete(:total)
       response = { 'hits' => scan.delete('hits') }
       count = 0
       loop do
         response['hits']['hits'].each do |document|
-          block.call(document)
+          yield(document)
           count += 1
         end
         response = request(:scroll, scan)
@@ -47,6 +48,6 @@ module ElasticsearchRasi
         break if !response || response['hits']['hits'].empty?
       end
       count
-    end # scroll_each
+    end
   end
 end
