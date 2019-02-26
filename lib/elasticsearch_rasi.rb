@@ -24,7 +24,6 @@ module ElasticsearchRasi
   LOG_FILE = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
   class Client
-    include Common
     attr_accessor :config, :es
 
     # idx - index name OR index type

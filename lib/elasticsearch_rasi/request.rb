@@ -2,6 +2,8 @@
 require 'active_support/core_ext/object/deep_dup'
 require 'active_support/core_ext/object/blank'
 
+require 'elasticsearch_rasi/request'
+
 module ElasticsearchRasi
   module Request
     CONTENT_TYPE     = { content_type: 'application/json' }.freeze
@@ -63,7 +65,7 @@ module ElasticsearchRasi
         # Strange behavior, sometimes ES gem returns empty result, but with OK headers
         raise(Faraday::ConnectionFailed, 'Blank response') if response.blank?
         return response if
-          !another_es?(method) || ![:bulk, :index, :update].include?(method)
+          !another_es?(method) || !%i[bulk index update].include?(method)
         @es_another.each do |es|
           next if es[:config].include?("save_#{@rasi_type}".to_sym) &&
                   es[:config]["save_#{@rasi_type}".to_sym] == false
@@ -79,8 +81,7 @@ module ElasticsearchRasi
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
              Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
         counter += 1
-        return { 'errors' => e.message } if counter >
-          (@config[:connect_attempts] || CONNECT_ATTEMPTS)
+        return { 'errors' => e.message } if counter > (@config[:connect_attempts] || CONNECT_ATTEMPTS)
         sleep(@config[:connect_sleep] || CONNECT_SLEEP)
         retry
       end

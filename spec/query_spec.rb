@@ -3,7 +3,16 @@ $LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
 require 'elasticsearch'
 
 describe ElasticsearchRasi do
-  context 'initialize from config' do
+  def test_count
+    klass.mention.count(
+      query: {
+        bool: {
+          filter: {
+            term: {
+              resource: resource } } } })
+  end
+
+  describe 'query_docs_by_###' do
     before do
       es.index(
         index: klass.mention.config[:idx_read],

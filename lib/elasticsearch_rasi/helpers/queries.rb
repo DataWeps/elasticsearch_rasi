@@ -1,6 +1,10 @@
 module ElasticsearchRasi
   class Queries
     QUERIES = {
+      mget_query: %({
+        "docs": [
+        ]
+      }),
       docs_query: %({
         "size": 0,
         "query": {
@@ -45,8 +49,11 @@ module ElasticsearchRasi
       def prepare_query(what, query, size = nil)
         temp_query = JsonHelper.load(QUERIES[what])
         temp_query['size'] = size if size
-        temp_query['query']['bool']['filter'] = query if query
-        puts temp_query
+        if what == :mget_query
+          temp_query['docs'] = query.map { |id| { '_id' => id } }
+        elsif query
+          temp_query['query']['bool']['filter'] = query
+        end
         temp_query
       end
     end
