@@ -1,6 +1,6 @@
 require 'active_support/core_ext/hash'
-require 'active_support/core_ext/object/blank'
 
+require 'elasticsearch_rasi/common'
 require 'elasticsearch_rasi/request'
 
 module ElasticsearchRasi
@@ -14,12 +14,11 @@ module ElasticsearchRasi
       return result if docs.blank?
       to_save = prepare_docs(docs)
 
-      raise("Incorrect docs supplied (#{docs.class})") unless to_save.is_a?(Array)
+      raise(TypeError, "Incorrect docs supplied (#{docs.class})") unless to_save.is_a?(Array)
       slice_save!(result, to_save, method, idx, type)
       result[:ok] = false unless result[:errors].empty?
       result
     end
-
 
     def create_bulk(slice, idx, method = :index, type = 'document')
       slice.map do |doc|
@@ -67,7 +66,10 @@ module ElasticsearchRasi
           [docs]
         else
           docs.map do |id, doc|
-            next unless id
+            if !id || !doc.is_a?(Hash)
+              raise(TypeError,
+                    "Wrong HashType { id => doc } of '#{docs}'")
+            end
             doc.merge('_id' => id)
           end.compact
         end

@@ -3,24 +3,22 @@ require 'elasticsearch'
 require 'typhoeus'
 require 'typhoeus/adapters/faraday'
 require 'active_support/core_ext/hash/deep_merge'
+require 'active_support/core_ext/object/blank'
 
 # helper methods
 require 'elasticsearch_rasi/util'
-require 'elasticsearch_rasi/query'
-require 'elasticsearch_rasi/request'
-require 'elasticsearch_rasi/common'
 require 'util/json_helper'
 require 'util/translate_lang_to_country'
 
 # alias query methods
-require 'elasticsearch_rasi/scroll'
+require 'elasticsearch_rasi/document'
 require 'elasticsearch_rasi/mention'
 require 'elasticsearch_rasi/node'
 
 module ElasticsearchRasi
   SLICES     = 250
   BULK_STORE = 250
-  DEFAULT_ANOTHER_METHODS = [:index, :update, :bulk].freeze
+  DEFAULT_ANOTHER_METHODS = %i[index update bulk].freeze
   LOG_FILE = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
   class Client

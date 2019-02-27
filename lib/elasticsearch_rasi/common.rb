@@ -15,9 +15,14 @@ module ElasticsearchRasi
         rslt
       end
 
+      def response_error(response)
+        raise(ParseResponseError, response.to_s) if \
+          response.blank? || response.include?('errors')
+      end
+
       # translate results from ES to {id => doc}
       def parse_response(response, docs = {})
-        raise(ParseResponseError, response.to_s) if !response || !response.include?('hits')
+        response_error(response)
         response['hits']['hits'].each_with_object(docs) do |doc, mem|
           mem[doc['_id']] = doc['_source']
         end

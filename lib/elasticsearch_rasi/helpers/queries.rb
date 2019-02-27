@@ -43,8 +43,7 @@ module ElasticsearchRasi
             "_cache": false
           }
         }
-      })
-    }
+      }) }.freeze
     class << self
       def prepare_query(what, query, size = nil)
         temp_query = JsonHelper.load(QUERIES[what])

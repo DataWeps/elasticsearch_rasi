@@ -123,6 +123,7 @@ module ElasticsearchRasi
         slice_params[:_source] = false  unless with_source
         slice_params[:_source] = source unless source.nil?
         response = request(request_type, slice_params) || (return nil)
+        Common.response_error(response)
         docs     = parse_block.call(response)
       end
       with_source ? docs : docs.keys

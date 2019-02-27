@@ -23,7 +23,7 @@ module ElasticsearchRasi
         { index:  Common.prepare_read_index(idx, @read_date, @read_date_months),
           scroll: SCROLL,
           body:   query }.merge(params)) || (return false)
-      raise(ParseResponseError, response.to_s) if !response || response.include?('errors')
+      Common.response_error(response)
       {
         'hits' => { 'hits' => response['hits']['hits'] },
         scroll:    params[:scroll] || SCROLL,
