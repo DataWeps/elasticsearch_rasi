@@ -48,6 +48,10 @@ describe ElasticsearchRasi do
         "#{ES[@key][:mention_client]}")
     end
 
+    it 'check language to country translate' do
+      expect(@es.translate_lang_to_country('cs')).to contain_exactly('cze')
+    end
+
     context 'file' do
       it 'should has file config for node' do
         expect(@es.node.config[:file]).to eq('node')

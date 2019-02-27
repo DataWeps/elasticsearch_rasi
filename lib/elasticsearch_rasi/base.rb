@@ -18,11 +18,9 @@ class ElasticsearchRasi
       docs = {}
       params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(id).each do |slice|
-        slice_params = params.merge(
-          body: { ids: slice }
-        )
-        slice_params[:_source] = [] unless with_source
-        slice_params[:_source] ||= source if source
+        slice_params = params.merge(body: { ids: slice })
+        slice_params[:_source] = false unless with_source
+        slice_params[:_source] = source unless source.nil?
         response = request(:mget, slice_params) || (return nil)
         response['docs'].each do |doc|
           next if !doc['exists'] && !doc['found']
@@ -38,16 +36,18 @@ class ElasticsearchRasi
       return {} unless ids
       ids = [ids] unless ids.is_a?(Array)
       return {} if ids.empty?
-
+      response = nil
       docs = {}
+
       params = { index: prepare_read_index(idx), type: type }
       array_slice_indexes(ids).each do |slice|
         slice_params = params.merge(body: get_docs_query(
           { ids: { type: type, values: slice } },
           slice.size))
-        slice_params[:_source] = [] unless with_source
-        slice_params[:_source] ||= source if source
-        response = request(:search, slice_params) || (return nil)
+        slice_params[:_source] = [] if
+          !with_source || (source.is_a?(Array) && source.blank?)
+        slice_params[:_source] ||= source if source.present?
+        response = request(:search, slice_params)
         parse_response(response, docs)
       end
       with_source ? docs : docs.keys
@@ -74,7 +74,8 @@ class ElasticsearchRasi
 
     # docs - [docs] or {id => doc}
     def save_docs(docs, method = :index, idx = @idx, type = 'document')
-      return true if docs.blank?
+      result = { ok: true, errors: [] }
+      return result if docs.blank?
       to_save =
         if docs.is_a?(Hash) # convert to array
           docs.stringify_keys!
@@ -89,8 +90,7 @@ class ElasticsearchRasi
         else
           docs
         end
-      raise "Incorrect docs supplied (#{docs.class})" unless to_save.is_a?(Array)
-      errors = []
+      raise("Incorrect docs supplied (#{docs.class})") unless to_save.is_a?(Array)
       array_slice_indexes(to_save, BULK_STORE).each do |slice|
         bulk = create_bulk(slice, idx, method, type)
         next if bulk.blank?
@@ -99,7 +99,7 @@ class ElasticsearchRasi
         sleep(@config[:bulk_sleep].to_i) if @config[:bulk_sleep]
 
         next if response['errors'].blank?
-        errors <<
+        result[:errors] <<
           if response['items'].blank?
             response['errors']
           else
@@ -110,9 +110,8 @@ class ElasticsearchRasi
             end.compact
           end
       end
-      {
-        ok: errors.empty? ? true : false,
-        errors: errors }
+      result[:ok] = false unless result[:errors].empty?
+      result
     end # save_docs
 
     # query - hash of the query to be done
@@ -122,8 +121,7 @@ class ElasticsearchRasi
         :search,
         index: prepare_read_index(idx),
         type: type,
-        body: query
-      ) || (return {})
+        body: query) || (return {})
       parse_response(response)
     end # count
 
