@@ -1,21 +1,19 @@
 require 'spec_helper'
-$LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
-require 'elasticsearch'
 
-describe ElasticsearchRasi do
+describe 'Query' do
   let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
   let(:es)    { Elasticsearch::Client.new(klass.config[:connect]) }
-  before { create_ids(ids) if defined?(ids) }
-  after  { delete_ids(ids) if defined?(ids) }
+  before { create_ids(klass, ids) if defined?(ids) }
+  after  { delete_ids(klass, ids) if defined?(ids) }
 
   describe 'query_docs_by_###' do
-    let(:ids) { 'test' }
+    let(:ids) { %w[test] }
 
     describe 'get docs' do
       shared_examples 'should_has_data' do
         subject { klass.mention.get_docs(ids: ids) }
         it 'should contains test object' do
-          expect(subject['test']['content']).to eq('data')
+          expect(subject['test']['content']).to eq('0')
         end
       end
 
@@ -38,20 +36,20 @@ describe ElasticsearchRasi do
   end
 
   describe 'get' do
-    let(:ids) { 'test' }
+    let(:ids) { %w[test] }
     context 'just document' do
-      subject { klass.mention.get(id: ids)['content'] }
-      it { is_expected.to eq('data') }
+      subject { klass.mention.get(id: ids[0])['content'] }
+      it { is_expected.to eq('0') }
     end
 
     context 'return complete document' do
-      subject { klass.mention.get(id: ids, just_source: false) }
-      it { is_expected.to include(ids) }
+      subject { klass.mention.get(id: ids[0], just_source: false) }
+      it { is_expected.to include(*ids) }
     end
 
     context 'return specific source' do
-      subject { klass.mention.get(id: ids, source: %w[resource]) }
-      it { is_expected.not_to include('content') }
+      subject { klass.mention.get(id: ids[0], source: %w[content]) }
+      it { is_expected.to eq("content" => "0") }
     end
   end
 

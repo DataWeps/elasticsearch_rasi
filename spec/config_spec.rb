@@ -35,6 +35,55 @@ describe ElasticsearchRasi do
     end
   end
 
+  describe 'max age is present' do
+    subject { ElasticsearchRasi::Client.new(:disputatio) }
+    before do
+      ES[:disputatio][:node_write_date] = true
+      ES[:disputatio][:node_max_age] = 3
+    end
+
+
+    it 'should has initialized write_date' do
+      expect(subject.node.write_date).to be(true)
+    end
+
+    it 'should has max age older than' do
+      expect(subject.node.max_age).to be >
+        (Time.now.months_ago(ES[:disputatio][:node_max_age] + 1).to_i)
+    end
+  end
+
+  describe 'ignore max age' do
+    before do
+      ES[:disputatio][:node_write_date] = true
+      ES[:disputatio][:node_max_age] = 3
+    end
+
+    subject { ElasticsearchRasi::Client.new(:disputatio, ignore_max_age: true) }
+
+    it 'should has initialized write_date' do
+      expect(subject.node.write_date).to be(true)
+    end
+
+    it 'should has max age older than' do
+      expect(subject.node.max_age).to be(nil)
+    end
+  end
+
+  describe 'write_date is disabled' do
+    before do
+      %i[node_write_date node_max_age].each do |key|
+        ES[:disputatio].delete(key)
+      end
+    end
+
+    subject { ElasticsearchRasi::Client.new(:disputatio) }
+
+    it 'should has initialized write_date' do
+      expect(subject.node.write_date).to be(false)
+    end
+  end
+
   describe 'initialize from config' do
     let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
     let(:es)    { Elasticsearch::Client.new(klass.config[:connect]) }
@@ -92,11 +141,12 @@ describe ElasticsearchRasi do
           'title'   => 'ahoj',
           'content' => 'ahoj obsah' }
       end
-      subject { klass.document.save_document(data) }
+      subject { klass.document.save_document(docs: data)[:ok] }
       it { is_expected.to eq(true) }
 
       context 'saved_data' do
         before do
+          klass.document.save_document(docs: data)
           es.indices.refresh(index: klass.config[:idx_mention_write])
         end
         subject { klass.document.get(id: '1')['title'] }
