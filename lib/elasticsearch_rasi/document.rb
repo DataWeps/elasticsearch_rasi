@@ -3,10 +3,13 @@ require 'elasticsearch_rasi/query'
 require 'elasticsearch_rasi/scroll'
 require 'elasticsearch_rasi/save'
 
+require 'utils/refines/time_index_name'
+
 require 'active_support/core_ext/time/calculations'
 
 module ElasticsearchRasi
   class Document
+    using TimeIndexName
     include Query
     include Save
     include Scroll
@@ -32,7 +35,7 @@ module ElasticsearchRasi
             break if from_month > this_month
             @read_date_months <<
               "#{@config["#{@rasi_type}_read_date_base".to_sym] || @config["idx_#{@rasi_type}_read".to_sym]}" \
-                "_#{from_month.strftime('%Y%m')}"
+                "_#{from_month.index_name_date}"
             from_month = from_month.months_since(1)
           end
           true

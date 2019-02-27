@@ -1,9 +1,8 @@
 require 'spec_helper'
-$LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
-require 'elasticsearch'
+
 require 'active_support/core_ext/time/calculations'
 
-describe ElasticsearchRasi do
+describe 'Mention' do
   let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
 
   describe 'save to specific date' do

@@ -2,10 +2,13 @@
 require 'unicode_utils/downcase'
 require 'digest/sha1'
 
+require 'utils/refines/time_index_name'
+
 require_relative 'err/parse_response_error'
 
 module ElasticsearchRasi
   class Common
+    using TimeIndexName
     class << self
       # prepare array indexes,lengths in the manner of slices
       # e.g. for a.length=25 and cnt=10 return [[0,10],[10,10],[20,5]]
@@ -35,7 +38,7 @@ module ElasticsearchRasi
         return nil if max_age &&
                       (parsed_published_at.to_i < max_age ||
                        parsed_published_at.to_i > (Time.now.to_i + (3 * 3600)))
-        "#{index}_#{parsed_published_at.strftime('%Y%m')}"
+        "#{index}_#{parsed_published_at.index_name_date}"
       end
 
       def prepare_read_index(index, read_date, read_date_months)

@@ -1,7 +1,7 @@
 # encoding:utf-8
-require 'active_support/core_ext/hash'
+require 'elasticsearch_rasi/request'
 
-require_relative 'err/parse_response_error'
+require 'active_support/core_ext/hash'
 
 module ElasticsearchRasi
   module Scroll

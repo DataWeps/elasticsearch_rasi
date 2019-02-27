@@ -7,8 +7,7 @@ require 'active_support/core_ext/object/blank'
 
 # helper methods
 require 'elasticsearch_rasi/util'
-require 'util/json_helper'
-require 'util/translate_lang_to_country'
+require 'utils/translate_lang_to_country'
 
 # alias query methods
 require 'elasticsearch_rasi/document'

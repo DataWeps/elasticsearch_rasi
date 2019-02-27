@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'activesupport', '~> 4.2', '>= 4.2.7'
   s.add_dependency 'unicode_utils', '~> 1.4'
   s.add_development_dependency "test-unit"
+  s.add_development_dependency "rake"
   s.add_development_dependency "rspec"
   s.add_development_dependency 'webmock', '~> 3.5', '>= 3.5.1'
   s.add_development_dependency "pry"

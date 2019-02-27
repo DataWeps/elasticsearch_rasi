@@ -52,7 +52,7 @@ module ElasticsearchRasi
         type: type,
         body: query) || (return {})
       Common.parse_response(response)
-    end # count
+    end
 
     # query - hash of the query to be done
     # return nil in case of error, document count otherwise

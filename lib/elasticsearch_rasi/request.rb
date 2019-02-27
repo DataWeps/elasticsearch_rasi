@@ -2,10 +2,11 @@
 require 'active_support/core_ext/object/deep_dup'
 require 'active_support/core_ext/object/blank'
 
-require 'elasticsearch_rasi/request'
+require 'utils/refines/time_index_name'
 
 module ElasticsearchRasi
   module Request
+    using TimeIndexName
     CONTENT_TYPE     = { content_type: 'application/json' }.freeze
     CONNECT_ATTEMPTS = 5
     CONNECT_SLEEP    = 0.1
@@ -42,7 +43,7 @@ module ElasticsearchRasi
       if config.include?("#{@rasi_type}_index".to_sym)
         config["#{@rasi_type}_index".to_sym]
       elsif config.include?("#{@rasi_type}_write_date".to_sym)
-        "#{config["#{@rasi_type}_write_date_base".to_sym]}_#{Time.now.strftime('%Y%m')}"
+        "#{config["#{@rasi_type}_write_date_base".to_sym]}_#{Time.now.index_name_date}"
       else
         params[key]
       end

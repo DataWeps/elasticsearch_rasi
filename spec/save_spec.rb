@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'util/json_helper'
+require 'utils/json_helper'
 
 require 'elasticsearch'
 require 'webmock/rspec'
