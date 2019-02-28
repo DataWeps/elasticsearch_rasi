@@ -99,7 +99,7 @@ describe ElasticsearchRasi do
     end
 
     it 'check config' do
-      expect(klass.config.size).not_to eq(0)
+      expect(klass.config.to_json.size).not_to eq(0)
     end
 
     it 'should has correct host' do
@@ -130,7 +130,7 @@ describe ElasticsearchRasi do
     end
 
     describe 'check config' do
-      subject { klass.config.size }
+      subject { klass.config.to_json.size }
       it { is_expected.not_to eq(0) }
     end
 
@@ -161,5 +161,8 @@ describe ElasticsearchRasi do
         type:  klass.config[:type],
         ignore: 404)
     end
+  end
+
+  describe 'connect_another' do
   end
 end

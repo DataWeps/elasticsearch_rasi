@@ -25,7 +25,8 @@ module ElasticsearchRasi
 
     def another_es?(method)
       !@es_another.empty? &&
-        !@config[:another_methods].blank? && @config[:another_methods].include?(method.to_sym)
+        @config.another_methods.present? &&
+        @config.another_methods.include?(method.to_sym)
     end
 
     def change_type?(config)
@@ -82,8 +83,8 @@ module ElasticsearchRasi
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
              Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
         counter += 1
-        return { 'errors' => e.message } if counter > (@config[:connect_attempts] || CONNECT_ATTEMPTS)
-        sleep(@config[:connect_sleep] || CONNECT_SLEEP)
+        return { 'errors' => e.message } if counter > (@config.connect_attempts || CONNECT_ATTEMPTS)
+        sleep(@config.connect_sleep || CONNECT_SLEEP)
         retry
       end
     end

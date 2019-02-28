@@ -42,7 +42,7 @@ module ElasticsearchRasi
         next if bulk.blank?
 
         response = request(:bulk, body: bulk)
-        sleep(@config[:bulk_sleep].to_i) if @config[:bulk_sleep]
+        sleep(@config.bulk_sleep.to_i) if @config.include?(:bulk_sleep)
 
         next if response['errors'].blank?
         result[:errors] <<

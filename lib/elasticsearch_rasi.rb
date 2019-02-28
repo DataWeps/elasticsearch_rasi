@@ -7,6 +7,7 @@ require 'active_support/core_ext/object/blank'
 
 # helper methods
 require 'elasticsearch_rasi/util'
+require 'elasticsearch_rasi/helpers/config'
 require 'utils/translate_lang_to_country'
 
 # alias query methods
@@ -32,50 +33,18 @@ module ElasticsearchRasi
     #   :log_file
     #   :logg_level - GLogg::??
     def initialize(idx, opts = {})
-      direct_idx = opts.include?(:direct_idx) ? opts[:direct_idx] : false
+      opts[:direct_idx] = opts.include?(:direct_idx) ? opts[:direct_idx] : false
 
       # direct set index(es)
-      @config =
-        if direct_idx
-          # main node index (fb_page, topic, article etc ...)
-          ES && ES.include?(idx.to_sym) ? ES[idx.to_sym] : opts
-        else
-          opts = (ES[idx.to_sym] || {}).deep_merge(opts)
-          raise(ArgumentError, "Missing defined index '#{idx}'") if
-            !opts || opts.empty?
-          opts.deep_symbolize_keys.merge(
-            node_file:               opts[:file] ? opts[:file][:node] : nil,
-            mention_file:            opts[:file] ? opts[:file][:mention] : nil,
-            idx_node_read:           get_index(opts, :node, :read),
-            idx_node_write:          get_index(opts, :node, :write),
-            idx_mention_read:        get_index(opts, :mention, :read),
-            idx_mention_write:       get_index(opts, :mention, :write),
-            idx_node_read_client:    get_index(opts, :node, :read, :client),
-            idx_mention_read_client: get_index(opts, :mention, :read, :client),
-            node_type:               opts[:node_type] || 'document',
-            mention_type:            opts[:mention_type] || 'document',
-            node_alias:              opts[:node_alias],
-            mention_alias:           opts[:mention_alias]).merge(connect: opts[:connect])
-        end
+      @config = ElasticsearchRasi::Config.new(idx, opts)
 
-      if (@config[:connect][:host] || @config[:connect][:hosts] || []).size > 1
-        @config[:connect][:retry_on_failure]   ||= true
-        @config[:connect][:reload_connections] ||= true
+      if (@config.connect[:host] || @config.connect[:hosts] || []).present?
+        @config.connect[:retry_on_failure]   ||= true
+        @config.connect[:reload_connections] ||= true
       end
-      @es = Elasticsearch::Client.new(@config[:connect].dup)
-      @es_another =
-        if @config.include?(:connect_another) && !@config[:connect_another].blank?
-          @config[:connect_another].map do |connect|
-            {
-              es: Elasticsearch::Client.new(connect[:connect].dup),
-              config: connect }
-          end
-        else
-          []
-        end
-      @config[:another_methods] = (
-        @config[:another_methods] || DEFAULT_ANOTHER_METHODS).map(&:to_sym) unless
-          @es_another.blank?
+
+      @es = Elasticsearch::Client.new(@config.connect.dup)
+      @es_another = create_another_clients
     end
 
     def mention
@@ -96,15 +65,14 @@ module ElasticsearchRasi
 
   private
 
-    def get_index(opts, type, access, client_type = :system)
-      return nil if opts.blank?
-      if client_type == :client && opts.include?("#{type}_client".to_sym)
-        opts["#{type}_client".to_sym]
-      elsif client_type == :system
-        write = ''
-        base  = "#{opts[:prefix]}#{opts[:base]}"
-        index = "#{base}#{opts[:"#{type}_suffix"]}"
-        "#{index}#{opts[:"#{type}_#{access}"]}#{write}"
+    def create_another_clients
+      if @config.connect_another.present?
+        (@config.connect_another || []).map do |connect|
+          { es: Elasticsearch::Client.new(connect[:connect].dup),
+            config: connect }
+        end
+      else
+        []
       end
     end
   end

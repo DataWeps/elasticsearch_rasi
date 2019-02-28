@@ -1,3 +1,5 @@
+require 'utils/json_helper'
+
 module ElasticsearchRasi
   class Queries
     QUERIES = {
