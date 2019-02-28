@@ -23,6 +23,7 @@ module ElasticsearchRasi
 
   class Client
     attr_accessor :config, :es
+    attr_reader :es_another
 
     # idx - index name OR index type
     # opts - optional configuration:
@@ -43,7 +44,7 @@ module ElasticsearchRasi
         @config.connect[:reload_connections] ||= true
       end
 
-      @es = Elasticsearch::Client.new(@config.connect.dup)
+      @es = create_client(@config.connect)
       @es_another = create_another_clients
     end
 
@@ -65,10 +66,14 @@ module ElasticsearchRasi
 
   private
 
+    def create_client(connect_config)
+      Elasticsearch::Client.new(connect_config.dup)
+    end
+
     def create_another_clients
       if @config.connect_another.present?
         (@config.connect_another || []).map do |connect|
-          { es: Elasticsearch::Client.new(connect[:connect].dup),
+          { es: create_client(connect[:connect].dup),
             config: connect }
         end
       else

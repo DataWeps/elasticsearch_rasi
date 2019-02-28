@@ -164,5 +164,11 @@ describe ElasticsearchRasi do
   end
 
   describe 'connect_another' do
+    before { ES[:disputatio][:connect_another] = [{ connect: { host: url } }] }
+    let(:url) { 'localhost:9203' }
+
+    it 'should has another es created' do
+      expect(subject.send(:es_another)[0][:es].transport.options[:host]).to eq(url)
+    end
   end
 end
