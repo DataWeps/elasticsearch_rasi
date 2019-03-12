@@ -112,6 +112,7 @@ module ElasticsearchRasi
     def compute_dates!(config)
       @write_date = compute_write_date?(config)
       @read_date  = compute_read_date?(config)
+      @lang_index = compute_lang_index?(config)
     end
 
     def compute_read_date?(config)
@@ -131,6 +132,10 @@ module ElasticsearchRasi
       else
         false
       end
+    end
+
+    def compute_lang_index?(config)
+      config[concat_rasi_type(suffix: '_lang_index')].present?
     end
 
     def compute_write_date?(config)

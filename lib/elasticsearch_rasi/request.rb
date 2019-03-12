@@ -35,10 +35,12 @@ module ElasticsearchRasi
 
     def change_index?(config)
       config.include?("#{@rasi_type}_index".to_sym) ||
-        config["#{@rasi_type}_write_date".to_sym]
+        config["#{@rasi_type}_write_date".to_sym] ||
+        config["#{@rasi_type}_lang_index".to_sym]
     end
 
     def change_index(key, config, params)
+      binding.pry
       return params[key] if
         params.include?(key) && !change_index?(config)
       if config.include?("#{@rasi_type}_index".to_sym)

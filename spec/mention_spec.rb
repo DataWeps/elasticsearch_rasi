@@ -1,8 +1,10 @@
 require 'spec_helper'
 
 require 'active_support/core_ext/time/calculations'
+require 'webmock/rspec'
 
 describe 'Mention' do
+  WebMock.allow_net_connect!
   let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
 
   describe 'save to specific date' do
@@ -41,6 +43,31 @@ describe 'Mention' do
       subject { klass.mention.create_bulk(data, klass.mention.config[:idx_write]) }
 
       it { expect(subject.size).to be(1) }
+    end
+  end
+
+  describe 'save to specific language' do
+    let(:url) { 'localhost:9203' }
+    before do
+      ES[:disputatio][:mention_lang_index] = true
+      ES[:disputatio][:mention_write_date] = true
+      ES[:disputatio][:mention_max_age] = 6
+      ES[:disputatio][:connect_another] = [{ connect: { host: url } }]
+    end
+
+    subject do
+      klass.mention.save_document(docs:
+        [
+          { '_id' => 'test',
+            'languages' => ['cs'],
+            'published_at' => Time.now.strftime('%Y-%m-%d') }])
+    end
+
+    it 'should has create search_author field' do
+      expect(subject).to have_requested(:post, /_bulk/).with { |request|
+        response = ElasticsearchRasi::JsonHelper.load(request.body.split("\n")[-1])
+        response.include?('search_author') && response['search_author'].include?('author_hash')
+      }
     end
   end
 end

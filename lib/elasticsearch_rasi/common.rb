@@ -31,14 +31,11 @@ module ElasticsearchRasi
         end
       end
 
-      def prepare_index(index, doc, max_age, write_date)
-        return index if doc.blank? || !write_date || doc['published_at'].blank?
-        parsed_published_at = Time.parse(doc['published_at'])
-        # max_age could be nil in the case of ignore_max_age
-        return nil if max_age &&
-                      (parsed_published_at.to_i < max_age ||
-                       parsed_published_at.to_i > (Time.now.to_i + (3 * 3600)))
-        "#{index}_#{parsed_published_at.index_name_date}"
+      def prepare_index(index, doc, max_age, write_date, lang_index)
+        return index if doc.blank?
+        return nil if missing_language?(doc, lang_index)
+        index = prepare_index_language(index, doc)
+        prepare_index_date(index, doc, max_age, write_date)
       end
 
       def prepare_read_index(index, read_date, read_date_months)
@@ -62,6 +59,26 @@ module ElasticsearchRasi
 
       def compute_author_hash(author)
         UnicodeUtils.downcase(Digest::SHA1.hexdigest(author))
+      end
+
+    private
+
+      def missing_language?(doc, lang_index)
+        lang_index && [doc['languages']].flatten.compact.blank? ? true : false
+      end
+
+      def prepare_index_language(index, doc)
+        "#{index}_#{[doc['languages']].flatten.compact[0]}"
+      end
+
+      def prepare_index_date(index, doc, max_age, write_date)
+        return index if !write_date || doc['published_at'].blank?
+        parsed_published_at = Time.parse(doc['published_at'])
+        # max_age could be nil in the case of ignore_max_age
+        return nil if max_age &&
+                      (parsed_published_at.to_i < max_age ||
+                       parsed_published_at.to_i > (Time.now.to_i + (3 * 3600)))
+        "#{index}_#{parsed_published_at.index_name_date}"
       end
     end
   end
