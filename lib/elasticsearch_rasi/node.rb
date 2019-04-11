@@ -9,6 +9,7 @@ module ElasticsearchRasi
         idx_read:  config[:idx_node_read],
         idx_write: config[:idx_node_write],
         alias:     config[:node_alias],
+        rasi_type: :node,
         type:      config[:node_type] || 'document'), es_another)
     end
   end

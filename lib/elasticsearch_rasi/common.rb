@@ -33,14 +33,13 @@ module ElasticsearchRasi
 
       def prepare_index(index, doc, max_age, write_date, lang_index)
         return index if doc.blank?
-        return nil if missing_language?(doc, lang_index)
-        index = prepare_index_language(index, doc)
+        index = prepare_index_language(index, doc, lang_index)
         prepare_index_date(index, doc, max_age, write_date)
       end
 
       def prepare_read_index(index, read_date, read_date_months)
         return index unless read_date
-        read_date_months.join(',')
+        read_date_months.map { |date| "#{index}#{date}" }.join(',')
       end
 
       def prepare_search_author!(doc)
@@ -63,11 +62,13 @@ module ElasticsearchRasi
 
     private
 
-      def missing_language?(doc, lang_index)
-        lang_index && [doc['languages']].flatten.compact.blank? ? true : false
+      def missing_language?(doc)
+        [doc['languages']].flatten.compact.blank? ? true : false
       end
 
-      def prepare_index_language(index, doc)
+      def prepare_index_language(index, doc, lang_index)
+        return index unless lang_index
+        return nil   if lang_index && missing_language?(doc)
         "#{index}_#{[doc['languages']].flatten.compact[0]}"
       end
 

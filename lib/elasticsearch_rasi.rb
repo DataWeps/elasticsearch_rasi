@@ -45,7 +45,7 @@ module ElasticsearchRasi
       end
 
       @es = create_client(@config.connect)
-      @es_another = create_another_clients
+      @es_another = create_another_clients(@config)
     end
 
     def mention
@@ -70,11 +70,11 @@ module ElasticsearchRasi
       Elasticsearch::Client.new(connect_config.dup)
     end
 
-    def create_another_clients
+    def create_another_clients(common_config)
       if @config.connect_another.present?
-        (@config.connect_another || []).map do |connect|
-          { es: create_client(connect[:connect].dup),
-            config: connect }
+        (@config.connect_another || []).map do |connect_config|
+          { es:     create_client(connect_config[:connect].dup),
+            config: common_config.clone.merge(connect_config) }
         end
       else
         []
