@@ -54,11 +54,12 @@ describe 'Mention' do
   describe 'save to specific language' do
     let(:url) { 'localhost:9203' }
     before do
-      ES[:disputatio][:mention_lang_index] = true
+      ES[:disputatio][:mention_language_index] = true
+      ES[:disputatio][:languages_write] = ['cs']
       ES[:disputatio][:mention_write_date] = true
       ES[:disputatio][:mention_max_age] = 6
       ES[:disputatio][:connect_another] = [
-        { connect: { host: url }, mention_lang_index: false }]
+        { connect: { host: url }, mention_language_index: false }]
     end
 
     subject do
@@ -86,7 +87,7 @@ describe 'Mention' do
       ES[:disputatio][:mention_max_age] = 6
       ES[:disputatio][:connect_another] = [
         { connect: { host: url, log: true },
-          mention_language_index: true, languages_write: ['sk'] }]
+          mention_language_index: true, languages_write: ['cs'] }]
     end
 
     subject do
