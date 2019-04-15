@@ -15,12 +15,12 @@ module ElasticsearchRasi
     attr_reader :config, :rasi_type, :write_date, :max_age, :read_date, :read_date_months
 
     def initialize(es, es_anothers, config, type)
-      @config = prepare_document_config(type, config)
+      @rasi_type        = type
+      @config           = prepare_document_config(type, config)
       @max_age          = nil
       @read_date_months = []
-
-      @es = es
-      @es_another = prepare_es_another!(es_anothers)
+      @es               = es
+      @es_another       = prepare_es_another!(es_anothers)
     end
 
     def get_docs(

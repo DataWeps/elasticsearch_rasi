@@ -80,12 +80,13 @@ describe 'Mention' do
   describe 'save to specific language only on another' do
     let(:url) { 'localhost:9203' }
     before do
-      ES[:disputatio][:mention_lang_index] = false
+      ES[:disputatio][:mention_language_index] = false
       ES[:disputatio][:mention_write_date] = true
       ES[:disputatio][:mention_read_date] = true
       ES[:disputatio][:mention_max_age] = 6
       ES[:disputatio][:connect_another] = [
-        { connect: { host: url, log: true, }, mention_lang_index: true }]
+        { connect: { host: url, log: true },
+          mention_language_index: true, languages_write: ['sk'] }]
     end
 
     subject do

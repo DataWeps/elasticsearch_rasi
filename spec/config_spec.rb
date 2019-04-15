@@ -13,7 +13,7 @@ describe ElasticsearchRasi do
 
     context 'save node' do
       it 'should has 6 months' do
-        expect(subject.mention.read_date_months.size).to be(ES[:disputatio][:mention_max_age] + 1)
+        expect(subject.mention.config.read_date_months.size).to be(ES[:disputatio][:mention_max_age] + 1)
       end
     end
   end
@@ -26,11 +26,11 @@ describe ElasticsearchRasi do
 
     context 'save node' do
       it 'should has 6 months' do
-        expect(subject.mention.read_date_months).to be_empty
+        expect(subject.mention.config.read_date_months).to be_empty
       end
 
       it 'should has read date false' do
-        expect(subject.mention.read_date).to be_falsey
+        expect(subject.mention.config.read_date).to be_falsey
       end
     end
   end
@@ -44,11 +44,11 @@ describe ElasticsearchRasi do
 
 
     it 'should has initialized write_date' do
-      expect(subject.node.write_date).to be(true)
+      expect(subject.node.config.write_date).to be(true)
     end
 
     it 'should has max age older than' do
-      expect(subject.node.max_age).to be >
+      expect(subject.node.config.max_age).to be >
         (Time.now.months_ago(ES[:disputatio][:node_max_age] + 1).to_i)
     end
   end
@@ -62,11 +62,11 @@ describe ElasticsearchRasi do
     subject { ElasticsearchRasi::Client.new(:disputatio, ignore_max_age: true) }
 
     it 'should has initialized write_date' do
-      expect(subject.node.write_date).to be(true)
+      expect(subject.node.config.write_date).to be(true)
     end
 
     it 'should has max age older than' do
-      expect(subject.node.max_age).to be(nil)
+      expect(subject.node.config.max_age).to be(nil)
     end
   end
 
@@ -80,7 +80,7 @@ describe ElasticsearchRasi do
     subject { ElasticsearchRasi::Client.new(:disputatio) }
 
     it 'should has initialized write_date' do
-      expect(subject.node.write_date).to be(false)
+      expect(subject.node.config.write_date).to be(false)
     end
   end
 
@@ -114,7 +114,7 @@ describe ElasticsearchRasi do
         idx_write: 'test_articles',
         idx_read:  'test_articles',
         type:      'document',
-        connect: { url: ES[:disputatio][:connect][:host], index: 'test_articles' } }
+        connect: { url: ES[:disputatio][:connect][:host], log: true, index: 'test_articles' } }
     end
     let(:klass) { ElasticsearchRasi::Client.new(:rss_feeds, es_opts) }
     let(:es) { Elasticsearch::Client.new(url: ES[:disputatio][:connect][:host]) }
@@ -141,15 +141,15 @@ describe ElasticsearchRasi do
           'title'   => 'ahoj',
           'content' => 'ahoj obsah' }
       end
-      subject { klass.document.save_document(docs: data)[:ok] }
+      subject { klass.document.save_document(docs: data, idx: 'test_mentions')[:ok] }
       it { is_expected.to eq(true) }
 
       context 'saved_data' do
         before do
-          klass.document.save_document(docs: data)
-          es.indices.refresh(index: klass.config[:idx_mention_write])
+          klass.document.save_document(docs: data, idx: 'test_mentions')
+          es.indices.refresh(index: 'test_mentions')
         end
-        subject { klass.document.get(id: '1')['title'] }
+        subject { klass.document.get(id: '1', idx: 'test_mentions')['title'] }
         it { is_expected.to eq('ahoj') }
       end
     end

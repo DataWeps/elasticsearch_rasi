@@ -31,9 +31,10 @@ module ElasticsearchRasi
         end
       end
 
-      def prepare_index(index, doc, max_age, write_date, lang_index)
+      def prepare_index(index, doc, max_age, write_date, lang_index, languages)
         return index if doc.blank?
-        index = prepare_index_language(index, doc, lang_index)
+        index = prepare_index_language(index, doc, lang_index, languages)
+        return nil unless index
         prepare_index_date(index, doc, max_age, write_date)
       end
 
@@ -62,13 +63,18 @@ module ElasticsearchRasi
 
     private
 
+      def exists_language?(doc, languages)
+        !(doc['languages'].flatten.compact & languages).empty?
+      end
+
       def missing_language?(doc)
         [doc['languages']].flatten.compact.blank? ? true : false
       end
 
-      def prepare_index_language(index, doc, lang_index)
+      def prepare_index_language(index, doc, lang_index, languages)
         return index unless lang_index
         return nil   if lang_index && missing_language?(doc)
+        return nil   if lang_index && !exists_language?(doc, languages)
         "#{index}_#{[doc['languages']].flatten.compact[0]}"
       end
 

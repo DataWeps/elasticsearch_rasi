@@ -21,13 +21,17 @@ describe ElasticsearchRasi do
 
   describe 'read node' do
     before do
-      create_ids(klass, ids, data)
       delete_ids(klass, ids)
+      create_ids(klass, ids, data)
     end
 
     subject { klass.node.get_docs(ids: ids) }
 
     it { is_expected.not_to eq({}) }
+
+    after do
+      delete_ids(klass, ids)
+    end
   end
 
   describe 'read node ids' do

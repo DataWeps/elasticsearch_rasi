@@ -9,6 +9,7 @@ module ElasticsearchRasi
     DEFAULT_TYPE = 'document'.freeze
     DEFAULT_ANOTHER_METHODS = %i[index update bulk].freeze
     CONNECT_ATTEMPTS        = 3
+    CONNECT_SLEEP           = 1
 
     def initialize(idx, opts)
       created_opts = \
@@ -26,10 +27,15 @@ module ElasticsearchRasi
     end
 
     def default_values!
-      @connect ||= {}
-      @connect_another  ||= {}
-      @connect_attempts ||= CONNECT_ATTEMPTS
-      @another_methods  ||= DEFAULT_ANOTHER_METHODS
+      self[:connect] ||= {}
+      self[:connect_another]  ||= {}
+      self[:connect_attempts] ||= CONNECT_ATTEMPTS
+      self[:connect_sleep]    ||= CONNECT_SLEEP
+      self[:another_methods]  ||= DEFAULT_ANOTHER_METHODS
+      self[:read_date_months] ||= []
+      self[:type]             ||= 'document'
+      self[:max_age]            = nil
+      self[:languages_write]  ||= false
     end
 
     def to_json
@@ -62,7 +68,7 @@ module ElasticsearchRasi
       return unless self[:rasi_type]
       self[:write_date] = compute_write_date?
       self[:read_date]  = compute_read_date?
-      self[:lang_index] = compute_lang_index?
+      self[:language_index] = compute_lang_index?
     end
 
   private
@@ -88,7 +94,7 @@ module ElasticsearchRasi
     end
 
     def compute_lang_index?
-      self[concat_rasi_type(suffix: '_lang_index')].present?
+      self[concat_rasi_type(suffix: '_language_index')].present?
     end
 
     def compute_write_date?
@@ -110,7 +116,8 @@ module ElasticsearchRasi
     # otherwise
     #   set @max_age
     def recognize_max_age!
-      return if @ignore_max_age
+      self[:max_age] = nil
+      return if self[:ignore_max_age]
       self[:max_age] = Time.now.months_ago(
         self[concat_rasi_type(suffix: '_max_age')] || DEFAULT_MAX_AGE) \
                            .beginning_of_month.to_i

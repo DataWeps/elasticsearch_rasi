@@ -2,6 +2,12 @@ require 'spec_helper'
 require 'elasticsearch'
 
 describe ElasticsearchRasi do
+  before do
+    ES[:disputatio][:mention_write_date] = true
+    ES[:disputatio][:mention_read_date]  = true
+    ES[:disputatio][:mention_max_age]    = 3
+  end
+
   let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
   let(:es)    { Elasticsearch::Client.new(klass.config[:connect]) }
   before { create_ids(klass, ids, ids) }

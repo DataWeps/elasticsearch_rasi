@@ -52,17 +52,21 @@ module ElasticsearchRasi
         params[:data],
         config.max_age,
         config.write_date,
-        config.lang_index)
+        config.language_index,
+        config.languages_write)
     end
 
     def prepare_params!(method, config, params)
-      if method == :bulk
-        prepare_bulk!(config, params)
-      elsif %i[index update].include?(method)
-        params[:index] = change_index(config, params)
+      return prepare_bulk!(config, params) if method == :bulk
+
+      if %i[index update].include?(method)
+        new_index = change_index(config, params)
       else
-        params[:index] = change_read_index(config, params)
+        new_index = change_read_index(config, params)
       end
+      params = {} if new_index.blank?
+      params[:index] = new_index
+      params
     end
 
     def prepare_bulk!(config, params)
@@ -75,6 +79,8 @@ module ElasticsearchRasi
       params[:body].delete_if do |data|
         data.values[0][:_index].blank?
       end
+      params.delete(:body) if params[:body].blank?
+      params
     end
 
     def send_request(method, params)
@@ -83,7 +89,7 @@ module ElasticsearchRasi
       begin
         clone_params = params.deep_dup
         prepare_params!(method, @config, clone_params)
-        response = @es.send(method, clone_params)
+        response = @es.send(method, clone_params) unless clone_params.blank?
         # Strange behavior, sometimes ES gem returns empty result, but with OK headers
         raise(Faraday::ConnectionFailed, 'Blank response') if response.blank?
         return response if
@@ -93,7 +99,7 @@ module ElasticsearchRasi
                   es[:config]["save_#{@rasi_type}".to_sym] == false
           clone_params = params.deep_dup
           prepare_params!(method, es[:config], clone_params)
-          es[:es].send(method.to_sym, clone_params)
+          es[:es].send(method.to_sym, clone_params) unless clone_params.blank?
         end
         response
       rescue Elasticsearch::Transport::Transport::Errors::InternalServerError => e

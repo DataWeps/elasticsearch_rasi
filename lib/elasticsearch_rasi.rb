@@ -49,15 +49,15 @@ module ElasticsearchRasi
     end
 
     def mention
-      @mention ||= ElasticsearchRasi::Mention.new(@es, @config, @es_another)
+      @mention ||= ElasticsearchRasi::Mention.new(@es, @es_another, @config)
     end
 
     def node
-      @node ||= ElasticsearchRasi::Node.new(@es, @config, @es_another)
+      @node ||= ElasticsearchRasi::Node.new(@es, @es_another, @config)
     end
 
     def document
-      @document ||= ElasticsearchRasi::Document.new(@es, @config, @es_another)
+      @document ||= ElasticsearchRasi::Document.new(@es, @es_another, @config, :document)
     end
 
     def translate_lang_to_country(language)
