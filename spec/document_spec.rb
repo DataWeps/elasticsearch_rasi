@@ -6,7 +6,7 @@ require 'elasticsearch_rasi'
 describe ElasticsearchRasi do
   context 'methods' do
     before(:context) do
-      @rasi_es = ElasticsearchRasi.new(:disputatio)
+      @rasi_es = ElasticsearchRasi.new(:disputatio, {:url => 'localhost:9200', :host => 'localhost:9200', :connect => {:host => 'localhost:9200'}})
     end
 
     context 'prepare_search_author' do
@@ -28,6 +28,27 @@ describe ElasticsearchRasi do
 
         it 'wrong query' do
           expect { response }.to raise_error(ParseResponseError)
+        end
+      end
+    end
+
+    describe 'search_in_index' do
+
+      context 'right index is given' do
+        let(:response) do
+          @rasi_es.node.search_in_index({}, 'disputatio_articles', 'document')
+        end
+        it 'response is valid' do
+          expect{ response }.equal? 10
+        end
+      end
+
+      context 'wrong index is given' do
+        let(:response) do
+          @rasi_es.node.search_in_index({}, 'blbost', 'document')
+        end
+        it 'searching raise error' do
+          expect{ response }.to raise_error()
         end
       end
     end

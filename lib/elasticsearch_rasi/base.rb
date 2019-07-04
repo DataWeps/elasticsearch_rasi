@@ -135,5 +135,14 @@ class ElasticsearchRasi
         body:  query)
       response['hits']['total'].to_i || 0
     end
+
+    def query_search_one_index(query, idx, type = 'document')
+      response = request(
+          :search,
+          index: idx,
+          type: type,
+          body: query) || (return {})
+      parse_response(response)
+    end
   end
 end

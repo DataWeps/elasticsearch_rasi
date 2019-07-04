@@ -113,6 +113,10 @@ class ElasticsearchRasi
       query_search(query, idx, type)
     end
 
+    def search_in_index(query, idx = @config[:idx_read], type = @config[:type])
+      query_search_one_index(query, idx, type)
+    end
+
   private
 
     # for data moving between elastics, we need to keep recognizing index based on published_at
