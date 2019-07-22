@@ -23,13 +23,14 @@ module ElasticsearchRasi
     def create_bulk(slice, idx, method = :index, type = 'document')
       slice.map do |doc|
         id_save = doc.delete('_id') || next
+        this_method = (doc.delete('_method') || method).to_sym
         Common.prepare_search_author!(doc)
-        doc = { :doc => doc } if method == :update
+        doc = { :doc => doc } if this_method == :update
         {
-          method => {
+          this_method => {
             _index: idx,
             _id:    id_save,
-            _type:  type }.merge(doc.empty? ? {} : { data: doc }) }
+            _type:  type } }
       end.compact
     end
 
