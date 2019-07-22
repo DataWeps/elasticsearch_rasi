@@ -1,13 +1,13 @@
 # encoding:utf-8
 require 'cgi'
 
-class ElasticsearchRasi
-  module Util
+module ElasticsearchRasi
+  class Util
     class << self
       # assemble additional parameter string from options in hash
       # e.g. {'arg1' => 'val1', 'arg2' => 'val2'} => 'arg1=val1&arg2=val2'
-      def param_str(h, join = '&')
-        h.to_a.map { |s| "#{s[0]}=#{s[-1]}" }.join(join)
+      def param_str(hash, join = '&')
+        hash.to_a.map { |s| "#{s[0]}=#{s[-1]}" }.join(join)
       end
 
       def parse_date_offset(offset)

@@ -1,133 +1,34 @@
 require 'spec_helper'
-$LOAD_PATH.unshift(File.join(__dir__, '../../app/workers'))
-require 'oj'
-require 'elasticsearch'
+
 require 'active_support/core_ext/time/calculations'
+require 'webmock/rspec'
 
-describe ElasticsearchRasi do
-  context 'search' do
-    let(:es) do
-      ElasticsearchRasi.new(:twitter)
-    end
+describe 'Mention' do
+  WebMock.allow_net_connect!
+  let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
 
-    let(:result) do
-      es.mention.search(
-        Oj.load(%({"size": 1, "query": { "bool": { "filter": {}}}})))
-    end
-
-    it 'should has search' do
-      expect(result.size).not_to be(0)
-    end
-  end
-
-  context 'initialize from config' do
-    before(:context) do
-      @rasi_es = ElasticsearchRasi.new(:disputatio)
-      @es = Elasticsearch::Client.new(@rasi_es.config[:connect])
-      @es.delete(
-        index: @rasi_es.config[:idx_mention_write],
-        id:    '1',
-        type:  @rasi_es.config[:mention_type],
-        ignore: 404)
-      @es.indices.refresh(
-        index: @rasi_es.config[:idx_mention_write]
-      )
-    end
-
-    it 'check config' do
-      expect(@rasi_es.config.size).not_to eq(0)
-    end
-
-    it 'save mention' do
-      expect(@rasi_es.mention.save_document(
-        '_id'     => '1',
-        'title'   => 'titulek',
-        'author'  => 'pokus',
-        'content' => 'titulek obsah')[:ok]).to eq(true)
-      @es.indices.refresh(
-        index: @rasi_es.config[:idx_mention_write])
-    end
-
-    it 'save more mentions' do
-      expect(@rasi_es.mention.save_document([
-        {
-          '_id'     => 1,
-          'title'   => 'titulek',
-          'content' => 'titulek obsah' },
-        {
-          '_id'     => 2,
-          'title'   => 'titulek',
-          'content' => 'titulek obsah' }])[:ok]).to eq(true)
-    end
-
-    context :error_mentions do
-      let(:response) do
-        @rasi_es.mention.save_document([
-          {
-            '_id'     => 1,
-            'title'   => 'titulek',
-            'cc'      => 'error',
-            'content' => 'titulek obsah' },
-          {
-            '_id'     => 2,
-            'title'   => 'titulek',
-            'content' => 'titulek obsah' }])
-      end
-
-      it 'read mention' do
-        expect(response[:ok]).not_to be(true)
-      end
-    end
-
-    it 'exists mention' do
-      expect(@rasi_es.mention.get_ids([1])[0]).to eq("1")
-    end
-
-    it 'delete mention' do
-      response = @rasi_es.mention.save_document({ '_id' => 1 }, :delete)
-      expect(response[:ok]).to be(true)
-    end
-
-    after(:context) do
-      # @es.delete(
-      #   index: @rasi_es.config[:idx_mention_write],
-      #   id:    '1',
-      #   type:  @rasi_es.config[:mention_type],
-      #   ignore: 404)
-      # @es.delete(
-      #   index: @rasi_es.config[:idx_mention_write],
-      #   id:    '2',
-      #   type:  @rasi_es.config[:mention_type],
-      #   ignore: 404)
-    end
-  end
-
-  context 'save to specific date' do
-    before :context do
+  describe 'save to specific date' do
+    before do
       ES[:disputatio][:mention_write_date] = true
       ES[:disputatio][:mention_max_age] = 6
-      @es = ElasticsearchRasi.new(:disputatio)
     end
 
-    context 'save node' do
-      before :context do
-        @bulk = @es.mention.create_bulk([{'_id' => 'test', 'published_at' => Time.now.strftime('%Y-%m-%d')}], @es.mention.config[:idx_write])
+    context 'save mention' do
+      subject do
+        klass.mention.save_document(docs: [
+          { '_id' => 'test',
+            'published_at' => Time.now.strftime('%Y-%m-%d') }])
       end
 
-      it 'should has date in 201701' do
-        expect(@bulk[0][:index][:_index]).to match(/#{Regexp.escape(Time.now.strftime('%Y%m'))}/)
+      it 'should has date in to now' do
+        expect(subject).to have_requested(:post, /_bulk/).with { |request|
+          response = ElasticsearchRasi::JsonHelper.load(request.body.split("\n")[0])
+          response['index']['_index'] =~ /#{Regexp.escape(Time.now.strftime('%Y%m'))}/
+        }
       end
     end
-  end
 
-  context :prepare_index do
-    context :skip_too_old_mentions do
-      before :context do
-        ES[:disputatio][:mention_write_date] = true
-        ES[:disputatio][:mention_max_age] = 6
-        @es = ElasticsearchRasi.new(:disputatio)
-      end
-
+    context 'skip_too_old_mentions' do
       let(:data) do
         [{
             '_id'          => 'too_old',
@@ -136,17 +37,80 @@ describe ElasticsearchRasi do
             '_id'          => 'also_too_old',
             'published_at' => (Time.now.months_ago(6).beginning_of_month - 86_400).to_s },
          {
-           '_id'          => 'just enough',
+           '_id'          => 'just_enough',
            'published_at' => Time.now.months_ago(6).beginning_of_month.to_s }]
       end
 
-      let(:bulk) do
-        @es.mention.create_bulk(data, @es.mention.config[:idx_write])
-      end
+      subject { klass.mention.save_document(docs: data) }
 
-      it 'should has just one bulk' do
-        expect(bulk.size).to be(1)
+      it 'should has save only 1 document' do
+        expect(subject).to have_requested(:post, /_bulk/).with { |request|
+          request.body.split("\n").size == 2
+        }
       end
+    end
+  end
+
+  describe 'save to specific language' do
+    let(:url) { 'localhost:9203' }
+    before do
+      ES[:disputatio][:mention_language_index] = true
+      ES[:disputatio][:languages_write] = ['cs']
+      ES[:disputatio][:mention_write_date] = true
+      ES[:disputatio][:mention_max_age] = 6
+      ES[:disputatio][:connect_another] = [
+        { connect: { host: url }, mention_language_index: false }]
+    end
+
+    subject do
+      klass.mention.save_document(docs:
+        [
+          { '_id' => 'test',
+            'languages' => ['cs'],
+            'published_at' => Time.now.strftime('%Y-%m-%d') }])
+    end
+
+    it 'should has create search_author field' do
+      expect(subject).to have_requested(:post, /_bulk/).with { |request|
+        response = ElasticsearchRasi::JsonHelper.load(request.body.split("\n")[0])
+        response['index']['_index'] =~ /cs/
+      }
+    end
+  end
+
+  describe 'save to specific language only on another' do
+    let(:url) { 'localhost:9203' }
+    before do
+      ES[:disputatio][:mention_language_index] = false
+      ES[:disputatio][:mention_write_date] = true
+      ES[:disputatio][:mention_read_date] = true
+      ES[:disputatio][:mention_max_age] = 6
+      ES[:disputatio][:connect_another] = [
+        { connect: { host: url, log: true },
+          mention_language_index: true, languages_write: ['cs'] }]
+    end
+
+    subject do
+      klass.mention.save_document(docs:
+        [
+          { '_id' => 'test',
+            'languages' => ['cs'],
+            'author'    => 'author name',
+            'published_at' => Time.now.strftime('%Y-%m-%d') }])
+    end
+
+    it 'should has save documents without language' do
+      expect(subject).to have_requested(:post, /:9202\S+_bulk/).with { |request|
+        response = ElasticsearchRasi::JsonHelper.load(request.body.split("\n")[0])
+        response['index']['_index'] !~ /cs/
+      }
+    end
+
+    it 'should has save documents with language' do
+      expect(subject).to have_requested(:post, /:9203\S+_bulk/).with { |request|
+        response = ElasticsearchRasi::JsonHelper.load(request.body.split("\n")[0])
+        response['index']['_index'] =~ /cs/
+      }
     end
   end
 end
