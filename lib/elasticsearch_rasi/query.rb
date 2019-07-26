@@ -22,8 +22,8 @@ module ElasticsearchRasi
       Queries.prepare_query(:count_query, query)
     end
 
-    def get_mget_query(ids)
-      Queries.prepare_query(:mget_query, ids)
+    def get_mget_query(ids, indices)
+      Queries.prepare_query(:mget_query, ids, nil, indices)
     end
 
     def query_docs_by_mget(ids, idx = @idx, type = 'document', with_source = true, source = nil)
@@ -34,7 +34,11 @@ module ElasticsearchRasi
         type: type,
         with_source: with_source,
         source: source,
-        query_block: proc { |slice| get_mget_query(slice) },
+        query_block: proc do |slice|
+          get_mget_query(
+            slice,
+            Common.prepare_read_index(idx, @read_date, @read_date_months))
+        end,
         parse_block: proc do |response|
           response['docs'].each_with_object({}) do |doc, mem|
             next unless doc['found']
@@ -114,10 +118,12 @@ module ElasticsearchRasi
       ids = [ids].flatten.compact
       return {} if ids.empty?
 
+
       docs = {}
-      params = {
-        index: Common.prepare_read_index(idx, @read_date, @read_date_months),
-        type: type }
+      params = { type: type }
+      unless request_type == :mget
+        params[:index] = Common.prepare_read_index(idx, @read_date, @read_date_months)
+      end
       Common.array_slice_indices(ids).each do |slice|
         slice_params = params.merge(body: query_block.call(slice))
         slice_params[:_source] = false  unless with_source

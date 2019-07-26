@@ -1,4 +1,5 @@
 require 'active_support/core_ext/hash'
+require 'active_support/core_ext/hash'
 
 require 'elasticsearch_rasi/common'
 require 'elasticsearch_rasi/request'
@@ -13,8 +14,8 @@ module ElasticsearchRasi
       result = { ok: true, errors: [] }
       return result if docs.blank?
       to_save = prepare_docs(docs)
-
       raise(TypeError, "Incorrect docs supplied (#{docs.class})") unless to_save.is_a?(Array)
+
       slice_save!(result, to_save, method, idx, type)
       result[:ok] = false unless result[:errors].empty?
       result
@@ -25,12 +26,14 @@ module ElasticsearchRasi
         id_save = doc.delete('_id') || next
         this_method = (doc.delete('_method') || method).to_sym
         Common.prepare_search_author!(doc)
-        doc = { :doc => doc } if this_method == :update
-        {
+        data = {
           this_method => {
             _index: idx,
             _id:    id_save,
             _type:  type } }
+        # merge only bulks with data provided [:index, :update]
+        data[this_method].merge!(data: doc) if doc.present?
+        data
       end.compact
     end
 

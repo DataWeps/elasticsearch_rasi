@@ -17,6 +17,15 @@ ES = {
     node_alias:      true,
     mention_alias:   true,
 
+    node_write_date: true,
+    node_read_date: true,
+    mention_write_date: true,
+    mention_read_date: true,
+    node_max_age: 2,
+    mention_max_age: 2,
+
+    languages_write: %w[cs sk],
+
     connect: {
       host: 'localhost:9202',
       log: true },

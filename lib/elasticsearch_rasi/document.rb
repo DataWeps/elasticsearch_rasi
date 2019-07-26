@@ -7,7 +7,6 @@ require 'active_support/core_ext/time/calculations'
 
 module ElasticsearchRasi
   class Document
-    DEFAULT_MAX_AGE = 6
     include Query
     include Save
     include Scroll

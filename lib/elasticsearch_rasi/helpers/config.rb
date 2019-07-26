@@ -10,6 +10,7 @@ module ElasticsearchRasi
     DEFAULT_ANOTHER_METHODS = %i[index update bulk].freeze
     CONNECT_ATTEMPTS        = 3
     CONNECT_SLEEP           = 1
+    DEFAULT_MAX_AGE         = 6
 
     def initialize(idx, opts)
       created_opts = \
@@ -32,6 +33,7 @@ module ElasticsearchRasi
       self[:connect_attempts] ||= CONNECT_ATTEMPTS
       self[:connect_sleep]    ||= CONNECT_SLEEP
       self[:another_methods]  ||= DEFAULT_ANOTHER_METHODS
+      (self[:another_methods] || []).map!(&:to_sym)
       self[:read_date_months] ||= []
       self[:type]             ||= 'document'
       self[:max_age]            = nil
@@ -81,16 +83,22 @@ module ElasticsearchRasi
         self[:read_date_months] ||= []
         loop do
           break if from_month > this_month
-          self[:read_date_months] << \
-            "#{self[concat_rasi_type(suffix: '_read_date_base')] ||
-               self[concat_rasi_type(prefix: 'idx', suffix: '_read')]}" \
-              "_#{from_month.index_name_date}"
+          new_month = create_new_month(from_month)
+          self[:read_date_months] << new_month unless \
+            self[:read_date_months].include?(new_month)
+
           from_month = from_month.months_since(1)
         end
         true
       else
         false
       end
+    end
+
+    def create_new_month(from_month)
+      "#{self[concat_rasi_type(suffix: '_read_date_base')] ||
+       self[concat_rasi_type(prefix: 'idx', suffix: '_read')]}" \
+      "_#{from_month.index_name_date}"
     end
 
     def compute_lang_index?
