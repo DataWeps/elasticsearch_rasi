@@ -29,7 +29,7 @@ describe ElasticsearchRasi do
           '_id'     => 'test',
           'content' => 'content that',
           'author'  => 'author surname',
-          'published_at' => '2019-01-01' }
+          'published_at' => Time.now.strftime('%Y-%m-%d') }
       end
 
       it_behaves_like('should_save_data')
@@ -41,7 +41,7 @@ describe ElasticsearchRasi do
           '_id'     => 'test',
           'content' => 'content that',
           'author'  => 'author surname',
-          'published_at' => '2019-01-01' }]
+          'published_at' => Time.now.strftime('%Y-%m-%d') }]
       end
 
       it_behaves_like('should_save_data')
@@ -52,11 +52,11 @@ describe ElasticsearchRasi do
         { 'test' => {
             'content' => 'content that',
             'author'  => 'author surname',
-            'published_at' => '2019-01-01' },
+            'published_at' => Time.now.strftime('%Y-%m-%d') },
           'test_2' => {
             'content' => 'content that',
             'author'  => 'author surname',
-            'published_at' => '2019-01-01' } }
+            'published_at' => Time.now.strftime('%Y-%m-%d') } }
       end
 
       it_behaves_like('should_save_data')
@@ -72,7 +72,7 @@ describe ElasticsearchRasi do
           {
             'content' => 'content that',
             'author'  => 'author surname',
-            'published_at' => '2019-01-01' }
+            'published_at' => Time.now.strftime('%Y-%m-%d') }
         end
 
         it_behaves_like('should_raise_error')

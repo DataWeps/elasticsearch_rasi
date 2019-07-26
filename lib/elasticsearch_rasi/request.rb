@@ -58,6 +58,7 @@ module ElasticsearchRasi
 
     def prepare_params!(method, config, params)
       return prepare_bulk!(config, params) if method == :bulk
+      return if method == :mget
 
       if %i[index update].include?(method)
         new_index = change_index(config, params)
@@ -71,10 +72,12 @@ module ElasticsearchRasi
 
     def prepare_bulk!(config, params)
       params[:body].each do |in_data|
-        data = in_data.values[0]
+        method = in_data.keys[0]
+        data   = in_data[method]
         data[:_type] = config["#{@rasi_type}_type".to_sym] if
           data.include?(:_type) && change_type?(config)
         data[:_index] = change_write_index(config, data)
+        data[:data]   = { doc: data[:data] } if method == :update
       end
       params[:body].delete_if do |data|
         data.values[0][:_index].blank?

@@ -47,11 +47,15 @@ module ElasticsearchRasi
         }
       }) }.freeze
     class << self
-      def prepare_query(what, query, size = nil)
+      def prepare_query(what, query, size = nil, idx = nil)
         temp_query = JsonHelper.load(QUERIES[what])
         temp_query['size'] = size if size
         if what == :mget_query
-          temp_query['docs'] = query.map { |id| { '_id' => id } }
+          temp_query['docs'] = [idx].flatten.each_with_object([]) do |index, mem|
+            query.each do |id|
+              mem << { '_index' => index, '_id' => id }
+            end
+          end
         elsif query
           temp_query['query']['bool']['filter'] = query
         end

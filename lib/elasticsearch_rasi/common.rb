@@ -40,7 +40,7 @@ module ElasticsearchRasi
 
       def prepare_read_index(index, read_date, read_date_months)
         return index unless read_date
-        read_date_months.map { |date| "#{index}#{date}" }.join(',')
+        read_date_months.map { |date| "#{index}#{date}" }.uniq.join(',')
       end
 
       def prepare_search_author!(doc)
