@@ -7,7 +7,7 @@ module ElasticsearchRasi
     using TimeIndexName
     KEYS         = %i[connect_another ignore_max_age connect_attempts].freeze
     DEFAULT_TYPE = 'document'.freeze
-    DEFAULT_ANOTHER_METHODS = %i[index update bulk].freeze
+    DEFAULT_ANOTHER_METHODS = %i[index update bulk]
     CONNECT_ATTEMPTS        = 3
     CONNECT_SLEEP           = 1
     DEFAULT_MAX_AGE         = 6
