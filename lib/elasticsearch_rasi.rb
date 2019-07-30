@@ -22,6 +22,7 @@ module ElasticsearchRasi
   LOG_FILE = File.join(File.dirname(__FILE__), '.', 'log/elasticsearch.log')
 
   class Client
+    include Request
     attr_accessor :config, :es
     attr_reader :es_another
 

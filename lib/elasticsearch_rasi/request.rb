@@ -15,8 +15,8 @@ module ElasticsearchRasi
       send_request(method, params)
     end
 
-    def clear_request(method, params)
-      response = send_request(method, params)
+    def clear_request(method, params, prepare_params = false)
+      response = send_request(method, params, prepare_params)
       return false if response.include?(:error)
       response
     end
@@ -86,12 +86,12 @@ module ElasticsearchRasi
       params
     end
 
-    def send_request(method, params)
+    def send_request(method, params, prepare_params = true)
       method = method.to_sym
       counter = 0
       begin
         clone_params = params.deep_dup
-        prepare_params!(method, @config, clone_params)
+        prepare_params!(method, @config, clone_params) if prepare_params
         response = @es.send(method, clone_params) unless clone_params.blank?
         # Strange behavior, sometimes ES gem returns empty result, but with OK headers
         raise(Faraday::ConnectionFailed, 'Blank response') if response.blank?
@@ -101,8 +101,9 @@ module ElasticsearchRasi
           next if es[:config].include?("save_#{@rasi_type}".to_sym) &&
                   es[:config]["save_#{@rasi_type}".to_sym] == false
           clone_params = params.deep_dup
-          prepare_params!(method, es[:config], clone_params)
+          prepare_params!(method, es[:config], clone_params) if prepare_params
           es[:es].send(method.to_sym, clone_params) unless clone_params.blank?
+          # TODO: recovery from missing documents : change update method to index method
         end
         response
       rescue Elasticsearch::Transport::Transport::Errors::InternalServerError => e

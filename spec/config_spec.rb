@@ -171,4 +171,18 @@ describe ElasticsearchRasi do
       expect(subject.send(:es_another)[0][:es].transport.options[:host]).to eq(url)
     end
   end
+
+  describe 'clear_request' do
+    let(:url) { 'localhost:9202' }
+    let(:klass) { ElasticsearchRasi::Client.new(:disputatio) }
+    subject do
+      klass.clear_request(
+        :index,
+        { index: 'test_articles', type: 'document', id: 'test', body: {} })
+    end
+
+    it 'should be ok' do
+      expect(subject[:ok]).to be_truthy
+    end
+  end
 end
