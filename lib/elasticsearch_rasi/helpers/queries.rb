@@ -26,13 +26,17 @@ module ElasticsearchRasi
             }
           }
         }),
-      bool_query: %({
+      filter_query: %({
         "query": {
           "bool": {
             "filter": {
-              "bool": {}
-            },
-            "_cache": false
+            }
+          }
+        }
+      }),
+      bool_query: %({
+        "query": {
+          "bool": {
           }
         }
       }),
@@ -56,7 +60,9 @@ module ElasticsearchRasi
               mem << { '_index' => index, '_id' => id }
             end
           end
-        elsif query
+        elsif what == :bool_query
+          temp_query['query']['bool'] = query
+        else
           temp_query['query']['bool']['filter'] = query
         end
         temp_query

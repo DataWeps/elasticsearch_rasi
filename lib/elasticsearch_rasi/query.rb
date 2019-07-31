@@ -14,6 +14,10 @@ module ElasticsearchRasi
       Queries.prepare_query(:docs_query_ids, query, size)
     end
 
+    def get_filter_query(query)
+      Queries.prepare_query(:filter_query, query)
+    end
+
     def get_bool_query(query)
       Queries.prepare_query(:bool_query, query)
     end
