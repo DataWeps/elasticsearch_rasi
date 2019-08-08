@@ -45,7 +45,7 @@ module ElasticsearchRasi
           query_docs_by_mget([id], idx, type, true, source)
         end
       return {} if response.blank?
-      just_source ? response[id] : response
+      just_source ? response[id.to_s] : response
     end
 
     # returns just ids
