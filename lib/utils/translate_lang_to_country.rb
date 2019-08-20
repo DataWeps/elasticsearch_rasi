@@ -1,6 +1,6 @@
 # encoding:utf-8
 
-module ElastisearchRasi
+module ElasticsearchRasi
   class TranslateLangToCountry
     LANG_TO_COUNTRY = {
       'cs'  => 'cze',

@@ -62,7 +62,7 @@ module ElasticsearchRasi
     end
 
     def translate_lang_to_country(language)
-      TranslateLangToCountry.translate_lang_to_country(language)
+      ElasticsearchRasi::TranslateLangToCountry.translate_lang_to_country(language)
     end
 
   private
