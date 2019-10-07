@@ -39,11 +39,7 @@ module ElasticsearchRasi
 
       # direct set index(es)
       @config = ElasticsearchRasi::Config.new(idx, opts)
-
-      if (@config.connect[:host] || @config.connect[:hosts] || []).present?
-        @config.connect[:retry_on_failure]   ||= true
-        @config.connect[:reload_connections] ||= true
-      end
+      default_config_connect_params!(@config.connect)
 
       @es = create_client(@config.connect)
       @es_another = create_another_clients(@config)
@@ -67,6 +63,13 @@ module ElasticsearchRasi
 
   private
 
+    def default_config_connect_params!(connect)
+      return if connect.blank? || (connect[:host] || connect[:hosts] || []).blank?
+
+      connect[:retry_on_failure]   ||= true
+      connect[:reload_connections] ||= true
+    end
+
     def create_client(connect_config)
       Elasticsearch::Client.new(connect_config.dup)
     end
@@ -74,6 +77,7 @@ module ElasticsearchRasi
     def create_another_clients(common_config)
       if @config.connect_another.present?
         (@config.connect_another || []).map do |connect_config|
+          default_config_connect_params!(connect_config[:connect])
           { es:     create_client(connect_config[:connect].dup),
             config: common_config.clone.merge(connect_config) }
         end

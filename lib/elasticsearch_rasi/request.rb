@@ -97,6 +97,7 @@ module ElasticsearchRasi
         raise(Faraday::ConnectionFailed, 'Blank response') if response.blank?
         return response if
           !another_es?(method) || !%i[bulk index update].include?(method)
+
         @es_another.each do |es|
           next if es[:config].include?("save_#{@rasi_type}".to_sym) &&
                   es[:config]["save_#{@rasi_type}".to_sym] == false
