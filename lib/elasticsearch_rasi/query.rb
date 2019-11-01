@@ -122,7 +122,6 @@ module ElasticsearchRasi
       ids = [ids].flatten.compact
       return {} if ids.empty?
 
-
       docs = {}
       params = { type: type }
       unless request_type == :mget
@@ -134,7 +133,7 @@ module ElasticsearchRasi
         slice_params[:_source] = source unless source.nil?
         response = request(request_type, slice_params) || (return nil)
         Common.response_error(response)
-        docs = parse_block.call(response)
+        docs.merge!(parse_block.call(response))
       end
       with_source ? docs : docs.keys
     end
