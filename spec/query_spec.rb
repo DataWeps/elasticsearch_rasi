@@ -74,26 +74,39 @@ describe 'Query' do
   end
 
   describe 'search' do
-    before do
-      es.index(
-        index: klass.mention.config[:idx_read],
-        type:  klass.mention.config[:type],
-        body: { content: 'content this', resource: 'resource' },
-        id:   'test_1')
-      es.index(
-        index: klass.mention.config[:idx_read],
-        type:  klass.mention.config[:type],
-        body: { content: 'content that', resource: 'resource' },
-        id:   'test_2')
-      es.indices.refresh(index: klass.mention.config[:idx_read])
+    context 'ignore_max_age' do
+      let(:es) { ElasticsearchRasi::Client.new(:disputatio, ignore_max_age: true) }
+
+      subject do
+        es.mention.search(
+          query: klass.mention.get_bool_query(match: { content: 'that' }))
+      end
+
+      it { is_expected.to be(true) }
     end
 
-    subject do
-      klass.mention.search(query: klass.mention.get_bool_query(match: { content: 'that' }))
-    end
+    context 'not ima' do
+      before do
+        es.index(
+          index: klass.mention.config[:idx_read],
+          type:  klass.mention.config[:type],
+          body: { content: 'content this', resource: 'resource' },
+          id:   'test_1')
+        es.index(
+          index: klass.mention.config[:idx_read],
+          type:  klass.mention.config[:type],
+          body: { content: 'content that', resource: 'resource' },
+          id:   'test_2')
+        es.indices.refresh(index: klass.mention.config[:idx_read])
+      end
 
-    it { is_expected.to include('test_2') }
-    it { is_expected.not_to include('test_1') }
+      subject do
+        klass.mention.search(query: klass.mention.get_bool_query(match: { content: 'that' }))
+      end
+
+      it { is_expected.to include('test_2') }
+      it { is_expected.not_to include('test_1') }
+    end
   end
 
   describe 'search' do

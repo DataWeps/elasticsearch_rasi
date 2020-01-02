@@ -20,7 +20,7 @@ module ElasticsearchRasi
     def scroll_scan(query, idx, params = {})
       response = request(
         :search,
-        { index:  Common.prepare_read_index(idx, @read_date, @read_date_months),
+        { index:  Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
           scroll: SCROLL,
           body:   query }.merge(params)) || (return false)
       Common.response_error(response)
