@@ -43,7 +43,8 @@ module ElasticsearchRasi
       Common.prepare_read_index(
         params[:index],
         config.read_date,
-        config.read_date_months)
+        config.read_date_months,
+        config.ignore_max_age)
     end
 
     def change_write_index(config, params)
@@ -101,6 +102,7 @@ module ElasticsearchRasi
         @es_another.each do |es|
           next if es[:config].include?("save_#{@rasi_type}".to_sym) &&
                   es[:config]["save_#{@rasi_type}".to_sym] == false
+
           clone_params = params.deep_dup
           prepare_params!(method, es[:config], clone_params) if prepare_params
           es[:es].send(method.to_sym, clone_params) unless clone_params.blank?
@@ -115,6 +117,7 @@ module ElasticsearchRasi
              Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
         counter += 1
         return { 'errors' => e.message } if counter > (@config.connect_attempts || CONNECT_ATTEMPTS)
+
         sleep(@config.connect_sleep || CONNECT_SLEEP)
         retry
       end

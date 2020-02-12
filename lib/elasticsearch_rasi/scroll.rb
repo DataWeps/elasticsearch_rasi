@@ -3,10 +3,22 @@ require 'elasticsearch_rasi/request'
 
 require 'active_support/core_ext/hash'
 
+module Elasticsearch
+  module API
+    module Actions
+      # An HTTP line is larger than X bytes for scroll_id within URL params
+      def scroll(arguments = {})
+        perform_request(HTTP_POST, '_search/scroll', {}, arguments).body
+      end
+    end
+  end
+end
+
 module ElasticsearchRasi
   module Scroll
     include Request
     SCROLL = '1m'.freeze
+
     def scroll_search(query, idx, params, &block)
       params.symbolize_keys!
       scroll = scroll_scan(query, idx, params) || (return 0)
@@ -47,6 +59,7 @@ module ElasticsearchRasi
         end
         response = request(:scroll, scan)
         break unless response
+
         scan[:scroll_id] = response['_scroll_id']
         break if !response || response['hits']['hits'].empty?
       end
