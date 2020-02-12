@@ -33,13 +33,15 @@ module ElasticsearchRasi
 
       def prepare_index(index, doc, max_age, write_date, lang_index, languages)
         return index if doc.blank?
+
         index = prepare_index_language(index, doc, lang_index, languages)
         return nil unless index
+
         prepare_index_date(index, doc, max_age, write_date)
       end
 
       def prepare_read_index(index, read_date, read_date_months, ignore_max_age = false)
-        return index if !read_date || !ignore_max_age
+        return index if !read_date || ignore_max_age
 
         read_date_months.map { |date| "#{index}#{date}" }.uniq.join(',')
       end
