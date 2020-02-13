@@ -6,7 +6,7 @@ require 'active_support/core_ext/hash'
 module Elasticsearch
   module API
     module Actions
-      ALLOWED_PARAMS = %i[scroll scroll_id body].freeze
+      ALLOWED_PARAMS = %i[scroll scroll_id].freeze
 
       # An HTTP line is larger than X bytes for scroll_id within URL params
       def scroll(arguments = {})
