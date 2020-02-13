@@ -76,9 +76,7 @@ module ElasticsearchRasi
         break unless response
 
         scan[:scroll_id] = response['_scroll_id']
-        puts response.dig('hits', 'hits')
-        # break if !response || (response.dig('hits', 'hits') || []).empty?
-        break if !response || response['hits']['hits'].empty?
+        break if !response || response.dig('hits', 'hits').blank?
       end
       count
     end
