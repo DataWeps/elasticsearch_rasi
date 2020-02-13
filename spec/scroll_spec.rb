@@ -18,7 +18,7 @@ describe ElasticsearchRasi do
     let(:searched_ids) { %w[1 2 3 4 5 6 7] }
     subject do
       docs = {}
-      query = klass.mention.get_bool_query(terms: { content: searched_ids })
+      query = klass.mention.get_bool_query(filter: { terms: { content: searched_ids } })
       query['size'] = 1
       klass.mention.scroll(query: query) do |document|
         docs[document['_id']] = document['_source']

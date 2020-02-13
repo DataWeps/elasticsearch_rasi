@@ -6,9 +6,23 @@ require 'active_support/core_ext/hash'
 module Elasticsearch
   module API
     module Actions
+      ALLOWED_PARAMS = %i[scroll scroll_id body].freeze
+
       # An HTTP line is larger than X bytes for scroll_id within URL params
       def scroll(arguments = {})
-        perform_request(HTTP_POST, '_search/scroll', {}, arguments).body
+        perform_request(
+          HTTP_POST, '_search/scroll', {}, prepared_arguments(arguments)).body
+      end
+
+      private
+
+      def prepared_arguments(arguments)
+        arguments.symbolize_keys!
+        ALLOWED_PARAMS.each_with_object({}) do |key, mem|
+          next unless arguments[key]
+
+          mem[key] = arguments.delete(key)
+        end
       end
     end
   end
@@ -32,9 +46,9 @@ module ElasticsearchRasi
     def scroll_scan(query, idx, params = {})
       response = request(
         :search,
-        { index:  Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
+        { index: idx,
           scroll: SCROLL,
-          body:   query }.merge(params)) || (return false)
+          body: query }.merge(params)) || (return false)
       Common.response_error(response)
       {
         'hits' => { 'hits' => response['hits']['hits'] },
@@ -58,9 +72,12 @@ module ElasticsearchRasi
           count += 1
         end
         response = request(:scroll, scan)
+        Common.response_error(response)
         break unless response
 
         scan[:scroll_id] = response['_scroll_id']
+        puts response.dig('hits', 'hits')
+        # break if !response || (response.dig('hits', 'hits') || []).empty?
         break if !response || response['hits']['hits'].empty?
       end
       count

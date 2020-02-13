@@ -83,6 +83,7 @@ module ElasticsearchRasi
         self[:read_date_months] ||= []
         loop do
           break if from_month > this_month
+
           new_month = create_new_month(from_month)
           self[:read_date_months] << new_month unless \
             self[:read_date_months].include?(new_month)

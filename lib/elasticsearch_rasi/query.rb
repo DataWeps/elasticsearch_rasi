@@ -56,7 +56,7 @@ module ElasticsearchRasi
     def query_search(query, idx, type = 'document')
       response = request(
         :search,
-        index: Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
+        index: idx,#Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
         type: type,
         body: query) || (return {})
       Common.parse_response(response)
@@ -67,7 +67,7 @@ module ElasticsearchRasi
     def query_count(query, idx, type = 'document')
       response = request(
         :search,
-        index: Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
+        index: idx,#Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
         type:  type,
         body:  query)
       response['hits']['total'].to_i || 0
@@ -91,7 +91,7 @@ module ElasticsearchRasi
     #   - return nil in case of error, otherwise {id => document}
     def query_doc(id, idx = @idx, type = 'document', just_source = true, source = nil)
       params = {
-        index: Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
+        index: idx, #Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age),
         type: type,
         id: id,
         ignore: 404 }
@@ -125,7 +125,7 @@ module ElasticsearchRasi
       docs = {}
       params = { type: type }
       unless request_type == :mget
-        params[:index] = Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age)
+        params[:index] = idx#Common.prepare_read_index(idx, @read_date, @read_date_months, @config.ignore_max_age)
       end
       Common.array_slice_indices(ids).each do |slice|
         slice_params = params.merge(body: query_block.call(slice))

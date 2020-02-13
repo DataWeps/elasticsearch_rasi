@@ -18,6 +18,7 @@ module ElasticsearchRasi
     def clear_request(method, params, prepare_params = false)
       response = send_request(method, params, prepare_params)
       return false if response.include?(:error)
+
       response
     end
 
@@ -61,11 +62,13 @@ module ElasticsearchRasi
       return prepare_bulk!(config, params) if method == :bulk
       return if method == :mget
 
-      if %i[index update].include?(method)
-        new_index = change_index(config, params)
-      else
-        new_index = change_read_index(config, params)
-      end
+      new_index =
+        if %i[index update].include?(method)
+          change_index(config, params)
+        else
+          change_read_index(config, params)
+        end
+
       params = {} if new_index.blank?
       params[:index] = new_index
       params
