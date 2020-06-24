@@ -18,7 +18,8 @@ module ElasticsearchRasi
       'bs'  => 'bih',
       'hr'  => 'hrv',
       'fr'  => 'fra',
-      'it'  => 'ita' }.freeze
+      'it'  => 'ita',
+      'sq'  => 'alb' }.freeze
 
     def self.translate_lang_to_country(lang)
       return nil unless lang
